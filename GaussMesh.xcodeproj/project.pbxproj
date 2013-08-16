@@ -191,9 +191,9 @@
 			isa = PBXGroup;
 			children = (
 				4A7A9CDD17BDF3AE00A18D52 /* poly2tri */,
-				4A96CCDD17AD7AC300A4C350 /* ColorFragmentShader.fragmentshader */,
-				4A96CCDE17AD7AC300A4C350 /* TransformVertexShader.vertexshader */,
 				4A96CCB017AD226000A4C350 /* common */,
+				4A96CCDE17AD7AC300A4C350 /* TransformVertexShader.vertexshader */,
+				4A96CCDD17AD7AC300A4C350 /* ColorFragmentShader.fragmentshader */,
 				4AC2ED4117AB00F90031765C /* main.cpp */,
 				4AC2ED4317AB00F90031765C /* GaussMesh.1 */,
 				4AC2ED7B17AB04A40031765C /* IncludeLib.h */,

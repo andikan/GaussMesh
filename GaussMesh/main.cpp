@@ -165,6 +165,8 @@ int main( void )
 
     Mesh mesh;
     GLenum drawMode;
+    
+    int filenum = 0;
 
     
     do{
@@ -315,10 +317,17 @@ int main( void )
 		}
         
         
-        if (glfwGetKey( GLFW_KEY_DOWN ) == GLFW_PRESS){
-            
-            if(!readContourData)
+        if (glfwGetKey( GLFW_KEY_DOWN ) == GLFW_PRESS)
+        {
+            if(readContourData)
             {
+                readContourData = false;
+            }
+            
+            
+            if(!readContourData && filenum < 31)
+            {
+                filenum = filenum + 1;
                 double xpos, ypos;
                 int vertexCount;
                 vector<Point*> contourpoints;
@@ -326,7 +335,7 @@ int main( void )
                 /* p2t data */
                 /// Constrained triangles
                 vector<p2t::Triangle*> triangles;
-                /// Triangle map
+                /// Triangle map (include edge outside the contour)
                 list<p2t::Triangle*> map;
                 /// Polylines (if there are holes in the polygon)
                 // vector< vector<p2t::Point*> > polylines;
@@ -335,12 +344,12 @@ int main( void )
                 
                 
                 
-                string filenum = "31";
+                string filenum_str = to_string(filenum);
                 string filename ="/Users/andikan/Dev/gauss/GaussMesh/GaussMesh/data/";
-                filename.append(filenum);
+                filename.append(filenum_str);
                 filename.append(".txt");
                 
-                cout << "Start processing " << filenum << ".txt" << endl;
+                cout << "Start processing " << filenum_str << ".txt" << endl;
                 
                 ContourReader reader(filename);
                 contourpoints = reader.getContourPoints();
@@ -367,7 +376,7 @@ int main( void )
                 triangles = cdt->GetTriangles();
                 clock_t end_time = clock();
                 cout << "Elapsed time (sec) = " << (end_time-init_time)/(double)(CLOCKS_PER_SEC) << " sec" << endl;
-                // map = cdt->GetMap();
+                map = cdt->GetMap();
                 
                                 
                 // mesh.loadEdgeFromMouse(clickPoint);
@@ -420,22 +429,35 @@ int main( void )
 //                    
 //                }
                 
-                for (int i = 0; i < triangles.size(); i++)
+                
+                
+                for(unsigned int i=0; i<triangles.size(); i++)
                 {
                     p2t::Triangle t = *triangles[i];
-                    vertices.push_back(vec3(t.GetPoint(0)->x, t.GetPoint(0)->y, 0.0f));
-                    vertices.push_back(vec3(t.GetPoint(1)->x, t.GetPoint(1)->y, 0.0f));
-                    vertices.push_back(vec3(t.GetPoint(1)->x, t.GetPoint(1)->y, 0.0f));
-                    vertices.push_back(vec3(t.GetPoint(2)->x, t.GetPoint(2)->y, 0.0f));
-                    vertices.push_back(vec3(t.GetPoint(2)->x, t.GetPoint(2)->y, 0.0f));
-                    vertices.push_back(vec3(t.GetPoint(0)->x, t.GetPoint(0)->y, 0.0f));
-                    colors.push_back(vec3(255, 255, 255));
-                    colors.push_back(vec3(255, 255, 255));
-                    colors.push_back(vec3(255, 255, 255));
-                    colors.push_back(vec3(255, 255, 255));
-                    colors.push_back(vec3(255, 255, 255));
-                    colors.push_back(vec3(255, 255, 255));
+                    p2t::Point a = *t.GetPoint(0);
+                    p2t::Point b = *t.GetPoint(1);
+                    p2t::Point c = *t.GetPoint(2);
+                    
+                    vertices.push_back(vec3(b.x, b.y, 0.0f));
+                    vertices.push_back(vec3(c.x, c.y, 0.0f));
 
+                    vertices.push_back(vec3(c.x, c.y, 0.0f));
+                    vertices.push_back(vec3(a.x, a.y, 0.0f));
+
+                    vertices.push_back(vec3(a.x, a.y, 0.0f));
+                    vertices.push_back(vec3(b.x, b.y, 0.0f));
+
+                    
+                    for(int i=0; i<3; i++){
+                        if(t.constrained_edge[i]){
+                            colors.push_back(vec3(255, 0, 255));
+                            colors.push_back(vec3(255, 0, 255));
+                        }
+                        else{
+                            colors.push_back(vec3(255, 255, 255));
+                            colors.push_back(vec3(255, 255, 255));
+                        }
+                    }
                 }
                 
                 // glBindBuffer(GL_ARRAY_BUFFER, spineVertexBuffer);
