@@ -7,8 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A7A9CEC17BDF3AE00A18D52 /* shapes.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4A7A9CDF17BDF3AE00A18D52 /* shapes.cc */; };
+		4A7A9CED17BDF3AE00A18D52 /* advancing_front.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4A7A9CE417BDF3AE00A18D52 /* advancing_front.cc */; };
+		4A7A9CEE17BDF3AE00A18D52 /* cdt.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4A7A9CE617BDF3AE00A18D52 /* cdt.cc */; };
+		4A7A9CEF17BDF3AE00A18D52 /* sweep.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4A7A9CE817BDF3AE00A18D52 /* sweep.cc */; };
+		4A7A9CF017BDF3AE00A18D52 /* sweep_context.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4A7A9CEA17BDF3AE00A18D52 /* sweep_context.cc */; };
+		4A94388517B28606000A95D0 /* ContourReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A94388417B28606000A95D0 /* ContourReader.cpp */; };
+		4A96CCC117AD226000A4C350 /* controls.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCB117AD226000A4C350 /* controls.cpp */; };
+		4A96CCC217AD226000A4C350 /* objloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCB317AD226000A4C350 /* objloader.cpp */; };
+		4A96CCC317AD226000A4C350 /* quaternion_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCB517AD226000A4C350 /* quaternion_utils.cpp */; };
+		4A96CCC417AD226000A4C350 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCB717AD226000A4C350 /* shader.cpp */; };
+		4A96CCC517AD226000A4C350 /* tangentspace.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCB917AD226000A4C350 /* tangentspace.cpp */; };
+		4A96CCC617AD226000A4C350 /* text2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCBB17AD226000A4C350 /* text2D.cpp */; };
+		4A96CCC717AD226000A4C350 /* texture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCBD17AD226000A4C350 /* texture.cpp */; };
+		4A96CCC817AD226000A4C350 /* vboindexer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCBF17AD226000A4C350 /* vboindexer.cpp */; };
+		4A96CCE417AD89AD00A4C350 /* drawFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCE317AD89AD00A4C350 /* drawFunction.cpp */; };
+		4A96CCF917B0563600A4C350 /* Mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCF717B0563600A4C350 /* Mesh.cpp */; };
+		4A96CCFC17B0576D00A4C350 /* Point.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCFA17B0576D00A4C350 /* Point.cpp */; };
+		4A96CCFF17B0582900A4C350 /* PointSet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CCFD17B0582900A4C350 /* PointSet.cpp */; };
+		4A96CD0217B058BF00A4C350 /* Edge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CD0017B058BF00A4C350 /* Edge.cpp */; };
+		4A96CD0517B0592500A4C350 /* Triangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CD0317B0592500A4C350 /* Triangle.cpp */; };
+		4A96CD0717B0628D00A4C350 /* Triangulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A96CD0617B0628D00A4C350 /* Triangulation.cpp */; };
 		4AC2ED4217AB00F90031765C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2ED4117AB00F90031765C /* main.cpp */; };
 		4AC2ED4417AB00F90031765C /* GaussMesh.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4AC2ED4317AB00F90031765C /* GaussMesh.1 */; };
+		4AC2ED4B17AB01700031765C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AC2ED4A17AB01700031765C /* OpenGL.framework */; };
+		4AC2ED4D17AB01790031765C /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AC2ED4C17AB01790031765C /* GLUT.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,9 +48,54 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4A7A9CDF17BDF3AE00A18D52 /* shapes.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shapes.cc; sourceTree = "<group>"; };
+		4A7A9CE017BDF3AE00A18D52 /* shapes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shapes.h; sourceTree = "<group>"; };
+		4A7A9CE117BDF3AE00A18D52 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utils.h; sourceTree = "<group>"; };
+		4A7A9CE217BDF3AE00A18D52 /* poly2tri.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = poly2tri.h; sourceTree = "<group>"; };
+		4A7A9CE417BDF3AE00A18D52 /* advancing_front.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = advancing_front.cc; sourceTree = "<group>"; };
+		4A7A9CE517BDF3AE00A18D52 /* advancing_front.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = advancing_front.h; sourceTree = "<group>"; };
+		4A7A9CE617BDF3AE00A18D52 /* cdt.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cdt.cc; sourceTree = "<group>"; };
+		4A7A9CE717BDF3AE00A18D52 /* cdt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cdt.h; sourceTree = "<group>"; };
+		4A7A9CE817BDF3AE00A18D52 /* sweep.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sweep.cc; sourceTree = "<group>"; };
+		4A7A9CE917BDF3AE00A18D52 /* sweep.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sweep.h; sourceTree = "<group>"; };
+		4A7A9CEA17BDF3AE00A18D52 /* sweep_context.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sweep_context.cc; sourceTree = "<group>"; };
+		4A7A9CEB17BDF3AE00A18D52 /* sweep_context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sweep_context.h; sourceTree = "<group>"; };
+		4A94388317B2848D000A95D0 /* ContourReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContourReader.h; sourceTree = "<group>"; };
+		4A94388417B28606000A95D0 /* ContourReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ContourReader.cpp; sourceTree = "<group>"; };
+		4A96CCB117AD226000A4C350 /* controls.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = controls.cpp; sourceTree = "<group>"; };
+		4A96CCB217AD226000A4C350 /* controls.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = controls.hpp; sourceTree = "<group>"; };
+		4A96CCB317AD226000A4C350 /* objloader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = objloader.cpp; sourceTree = "<group>"; };
+		4A96CCB417AD226000A4C350 /* objloader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = objloader.hpp; sourceTree = "<group>"; };
+		4A96CCB517AD226000A4C350 /* quaternion_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = quaternion_utils.cpp; sourceTree = "<group>"; };
+		4A96CCB617AD226000A4C350 /* quaternion_utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = quaternion_utils.hpp; sourceTree = "<group>"; };
+		4A96CCB717AD226000A4C350 /* shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shader.cpp; sourceTree = "<group>"; };
+		4A96CCB817AD226000A4C350 /* shader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = shader.hpp; sourceTree = "<group>"; };
+		4A96CCB917AD226000A4C350 /* tangentspace.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tangentspace.cpp; sourceTree = "<group>"; };
+		4A96CCBA17AD226000A4C350 /* tangentspace.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = tangentspace.hpp; sourceTree = "<group>"; };
+		4A96CCBB17AD226000A4C350 /* text2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text2D.cpp; sourceTree = "<group>"; };
+		4A96CCBC17AD226000A4C350 /* text2D.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = text2D.hpp; sourceTree = "<group>"; };
+		4A96CCBD17AD226000A4C350 /* texture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = texture.cpp; sourceTree = "<group>"; };
+		4A96CCBE17AD226000A4C350 /* texture.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = texture.hpp; sourceTree = "<group>"; };
+		4A96CCBF17AD226000A4C350 /* vboindexer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vboindexer.cpp; sourceTree = "<group>"; };
+		4A96CCC017AD226000A4C350 /* vboindexer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vboindexer.hpp; sourceTree = "<group>"; };
+		4A96CCDD17AD7AC300A4C350 /* ColorFragmentShader.fragmentshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ColorFragmentShader.fragmentshader; sourceTree = "<group>"; };
+		4A96CCDE17AD7AC300A4C350 /* TransformVertexShader.vertexshader */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TransformVertexShader.vertexshader; sourceTree = "<group>"; };
+		4A96CCE217AD897800A4C350 /* drawFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = drawFunction.h; sourceTree = "<group>"; };
+		4A96CCE317AD89AD00A4C350 /* drawFunction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = drawFunction.cpp; sourceTree = "<group>"; };
+		4A96CCF517B0539E00A4C350 /* Triangulation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Triangulation.h; sourceTree = "<group>"; };
+		4A96CCF617B0542A00A4C350 /* Mesh_structure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mesh_structure.h; sourceTree = "<group>"; };
+		4A96CCF717B0563600A4C350 /* Mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mesh.cpp; sourceTree = "<group>"; };
+		4A96CCFA17B0576D00A4C350 /* Point.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Point.cpp; sourceTree = "<group>"; };
+		4A96CCFD17B0582900A4C350 /* PointSet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PointSet.cpp; sourceTree = "<group>"; };
+		4A96CD0017B058BF00A4C350 /* Edge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Edge.cpp; sourceTree = "<group>"; };
+		4A96CD0317B0592500A4C350 /* Triangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Triangle.cpp; sourceTree = "<group>"; };
+		4A96CD0617B0628D00A4C350 /* Triangulation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Triangulation.cpp; sourceTree = "<group>"; };
 		4AC2ED3E17AB00F90031765C /* GaussMesh */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GaussMesh; sourceTree = BUILT_PRODUCTS_DIR; };
 		4AC2ED4117AB00F90031765C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		4AC2ED4317AB00F90031765C /* GaussMesh.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = GaussMesh.1; sourceTree = "<group>"; };
+		4AC2ED4A17AB01700031765C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		4AC2ED4C17AB01790031765C /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		4AC2ED7B17AB04A40031765C /* IncludeLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IncludeLib.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,15 +103,77 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AC2ED4D17AB01790031765C /* GLUT.framework in Frameworks */,
+				4AC2ED4B17AB01700031765C /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A7A9CDD17BDF3AE00A18D52 /* poly2tri */ = {
+			isa = PBXGroup;
+			children = (
+				4A7A9CDE17BDF3AE00A18D52 /* common */,
+				4A7A9CE217BDF3AE00A18D52 /* poly2tri.h */,
+				4A7A9CE317BDF3AE00A18D52 /* sweep */,
+			);
+			path = poly2tri;
+			sourceTree = "<group>";
+		};
+		4A7A9CDE17BDF3AE00A18D52 /* common */ = {
+			isa = PBXGroup;
+			children = (
+				4A7A9CDF17BDF3AE00A18D52 /* shapes.cc */,
+				4A7A9CE017BDF3AE00A18D52 /* shapes.h */,
+				4A7A9CE117BDF3AE00A18D52 /* utils.h */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
+		4A7A9CE317BDF3AE00A18D52 /* sweep */ = {
+			isa = PBXGroup;
+			children = (
+				4A7A9CE417BDF3AE00A18D52 /* advancing_front.cc */,
+				4A7A9CE517BDF3AE00A18D52 /* advancing_front.h */,
+				4A7A9CE617BDF3AE00A18D52 /* cdt.cc */,
+				4A7A9CE717BDF3AE00A18D52 /* cdt.h */,
+				4A7A9CE817BDF3AE00A18D52 /* sweep.cc */,
+				4A7A9CE917BDF3AE00A18D52 /* sweep.h */,
+				4A7A9CEA17BDF3AE00A18D52 /* sweep_context.cc */,
+				4A7A9CEB17BDF3AE00A18D52 /* sweep_context.h */,
+			);
+			path = sweep;
+			sourceTree = "<group>";
+		};
+		4A96CCB017AD226000A4C350 /* common */ = {
+			isa = PBXGroup;
+			children = (
+				4A96CCB117AD226000A4C350 /* controls.cpp */,
+				4A96CCB217AD226000A4C350 /* controls.hpp */,
+				4A96CCB317AD226000A4C350 /* objloader.cpp */,
+				4A96CCB417AD226000A4C350 /* objloader.hpp */,
+				4A96CCB517AD226000A4C350 /* quaternion_utils.cpp */,
+				4A96CCB617AD226000A4C350 /* quaternion_utils.hpp */,
+				4A96CCB717AD226000A4C350 /* shader.cpp */,
+				4A96CCB817AD226000A4C350 /* shader.hpp */,
+				4A96CCB917AD226000A4C350 /* tangentspace.cpp */,
+				4A96CCBA17AD226000A4C350 /* tangentspace.hpp */,
+				4A96CCBB17AD226000A4C350 /* text2D.cpp */,
+				4A96CCBC17AD226000A4C350 /* text2D.hpp */,
+				4A96CCBD17AD226000A4C350 /* texture.cpp */,
+				4A96CCBE17AD226000A4C350 /* texture.hpp */,
+				4A96CCBF17AD226000A4C350 /* vboindexer.cpp */,
+				4A96CCC017AD226000A4C350 /* vboindexer.hpp */,
+			);
+			path = common;
+			sourceTree = "<group>";
+		};
 		4AC2ED3517AB00F90031765C = {
 			isa = PBXGroup;
 			children = (
+				4AC2ED4C17AB01790031765C /* GLUT.framework */,
+				4AC2ED4A17AB01700031765C /* OpenGL.framework */,
 				4AC2ED4017AB00F90031765C /* GaussMesh */,
 				4AC2ED3F17AB00F90031765C /* Products */,
 			);
@@ -60,8 +190,25 @@
 		4AC2ED4017AB00F90031765C /* GaussMesh */ = {
 			isa = PBXGroup;
 			children = (
+				4A7A9CDD17BDF3AE00A18D52 /* poly2tri */,
+				4A96CCDD17AD7AC300A4C350 /* ColorFragmentShader.fragmentshader */,
+				4A96CCDE17AD7AC300A4C350 /* TransformVertexShader.vertexshader */,
+				4A96CCB017AD226000A4C350 /* common */,
 				4AC2ED4117AB00F90031765C /* main.cpp */,
 				4AC2ED4317AB00F90031765C /* GaussMesh.1 */,
+				4AC2ED7B17AB04A40031765C /* IncludeLib.h */,
+				4A96CCE217AD897800A4C350 /* drawFunction.h */,
+				4A96CCE317AD89AD00A4C350 /* drawFunction.cpp */,
+				4A96CCF517B0539E00A4C350 /* Triangulation.h */,
+				4A96CCF617B0542A00A4C350 /* Mesh_structure.h */,
+				4A96CCF717B0563600A4C350 /* Mesh.cpp */,
+				4A96CCFA17B0576D00A4C350 /* Point.cpp */,
+				4A96CCFD17B0582900A4C350 /* PointSet.cpp */,
+				4A96CD0017B058BF00A4C350 /* Edge.cpp */,
+				4A96CD0317B0592500A4C350 /* Triangle.cpp */,
+				4A96CD0617B0628D00A4C350 /* Triangulation.cpp */,
+				4A94388317B2848D000A95D0 /* ContourReader.h */,
+				4A94388417B28606000A95D0 /* ContourReader.cpp */,
 			);
 			path = GaussMesh;
 			sourceTree = "<group>";
@@ -118,6 +265,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				4AC2ED4217AB00F90031765C /* main.cpp in Sources */,
+				4A96CCC117AD226000A4C350 /* controls.cpp in Sources */,
+				4A96CCC217AD226000A4C350 /* objloader.cpp in Sources */,
+				4A96CCC317AD226000A4C350 /* quaternion_utils.cpp in Sources */,
+				4A96CCC417AD226000A4C350 /* shader.cpp in Sources */,
+				4A96CCC517AD226000A4C350 /* tangentspace.cpp in Sources */,
+				4A96CCC617AD226000A4C350 /* text2D.cpp in Sources */,
+				4A96CCC717AD226000A4C350 /* texture.cpp in Sources */,
+				4A96CCC817AD226000A4C350 /* vboindexer.cpp in Sources */,
+				4A96CCE417AD89AD00A4C350 /* drawFunction.cpp in Sources */,
+				4A96CCF917B0563600A4C350 /* Mesh.cpp in Sources */,
+				4A96CCFC17B0576D00A4C350 /* Point.cpp in Sources */,
+				4A96CCFF17B0582900A4C350 /* PointSet.cpp in Sources */,
+				4A96CD0217B058BF00A4C350 /* Edge.cpp in Sources */,
+				4A96CD0517B0592500A4C350 /* Triangle.cpp in Sources */,
+				4A96CD0717B0628D00A4C350 /* Triangulation.cpp in Sources */,
+				4A94388517B28606000A95D0 /* ContourReader.cpp in Sources */,
+				4A7A9CEC17BDF3AE00A18D52 /* shapes.cc in Sources */,
+				4A7A9CED17BDF3AE00A18D52 /* advancing_front.cc in Sources */,
+				4A7A9CEE17BDF3AE00A18D52 /* cdt.cc in Sources */,
+				4A7A9CEF17BDF3AE00A18D52 /* sweep.cc in Sources */,
+				4A7A9CF017BDF3AE00A18D52 /* sweep_context.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -186,14 +354,40 @@
 		4AC2ED4817AB00F90031765C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = /usr/local/lib;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"./**",
+					/usr/local/include/glm/gtc,
+				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-lGLEW",
+					"-lGLFW",
+					"-lAntTweakBar",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
 		4AC2ED4917AB00F90031765C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = /usr/local/lib;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"./**",
+					/usr/local/include/glm/gtc,
+				);
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				OTHER_LDFLAGS = (
+					"-lGLEW",
+					"-lGLFW",
+					"-lAntTweakBar",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;
 		};
@@ -216,6 +410,7 @@
 				4AC2ED4917AB00F90031765C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

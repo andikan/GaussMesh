@@ -1,0 +1,8 @@
+#version 120
+
+in vec3 vColor;
+ 
+void main( void )
+{   
+   gl_FragColor.rgb = vColor;
+}
