@@ -53,15 +53,11 @@ void Triangle::unLink()
     {
         if(this->edge[i] == NULL)
             continue;
-        // if(this->edge[i]->type < 0)
-        // {
-            this->edge[i]->p1->removeTriangle(this->edge[i]->e1, this);
-            this->edge[i]->p2->removeTriangle(this->edge[i]->e2, this);
-        // }
+        
+        this->edge[i]->p1->removeTriangle(this->edge[i]->e1, this);
+        this->edge[i]->p2->removeTriangle(this->edge[i]->e2, this);
     }
-    
     this->parent->triSet.erase(this->tit);
-
 }
 
 void Triangle::remove(Edge *e)
@@ -92,16 +88,14 @@ Edge* Triangle::oppositeEdge(Point* p)
 
 Point* Triangle::oppositePoint(Edge* e)
 {
-    if(this != NULL)
+    
+    for(int i = 0; i < 3; i++)
     {
-        for(int i = 0; i < 3; i++)
-        {
-            if(e == this->edge[i])
-                return this->point[i];
-        }
+        if(e == this->edge[i])
+            return this->point[i];
     }
-    else
-        return NULL;
+
+    return NULL;
 }
 
 void Triangle::calNormal()

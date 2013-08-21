@@ -135,12 +135,11 @@ bool linkTest(Point* p1, Point* p2)
 			{
 				if(it->tL != NULL || it->theta == theta)
 					return false;
-				// return true;
+				return true;
 			}
-            return true;
 		}
 	}
-	// return true; // change to pass
+	return true; // change to pass
 }
 
 NeighborLit examBaseCandidate(NeighborLit base, NeighborLit first, NeighborLit next, int LR)

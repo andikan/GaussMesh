@@ -21,6 +21,9 @@
 // Include GLM
 #include <glm/glm.hpp>
 
+// Include poly2tri
+#include "poly2tri/poly2tri.h"
+
 struct Neighbor;
 class Point;
 class Edge;
@@ -147,7 +150,8 @@ public:
     void constraintBound();
     std::vector<Point*> getSpinePoints(PointSet &ps);
     
-    
+    void loadP2tPoints(std::vector<p2t::Point*> polyline);
+    void addP2tTriangles(std::vector<p2t::Triangle*> triangles);
     
     
     void loadTriangleFromPointSet(const PointSet& ps);

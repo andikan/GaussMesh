@@ -53,7 +53,7 @@ vector<Point*> ContourReader::getContourPoints()
             }
             else
             {
-                if(true)
+                if(i%2 == 0)
                 {
                     tmp = strtok(line, " ");
                     xpos = atof(tmp);

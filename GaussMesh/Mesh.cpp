@@ -33,6 +33,8 @@ void Mesh::release()
 	}
 }
 
+
+
 void Mesh::loadEdgeFromMouse(vector<glm::vec3> point)
 {
 	// Allocate buffer for each point: pos
@@ -62,6 +64,7 @@ void Mesh::loadAndSortPointSet()
 
 void Mesh::loadEdgeFromPointSet(const PointSet& ps)
 {
+    this->release();
     list<Edge*> edgeList;
 	list<Point*>::const_iterator pit;
 	NeighborLit nit;
@@ -82,12 +85,57 @@ void Mesh::loadEdgeFromPointSet(const PointSet& ps)
 	{
 		// Point1
 		for(int i = 0; i < 3; i++)
+        {
 			this->vertexBuffer[vbp++] = (*eit)->p1->p[i];
+        }
 		// Point2
 		for(int i = 0; i < 3; i++)
+        {
 			this->vertexBuffer[vbp++] = (*eit)->p2->p[i];
+        }
 	}
     this->drawMode = GL_LINES;
+}
+
+void Mesh::loadTriangleFromPointSet(const PointSet& ps)
+{
+	// Allocate buffer for each vertex of trangle: pos, color, normal(3*3*3 floats)
+	this->release();
+	this->pNum = (int)ps.triSet.size() * 3;
+	this->vertexBuffer = new float[this->pNum*3];
+	// Load data into buffer in the form of "pos, color, normal, pos, color, normal, ..."
+	int vbp = 0;
+	list<Triangle*>::const_iterator it;
+	for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
+	{
+		for(int i = 0; i < 3; i++)
+		{
+			for(int j = 0; j < 3; j++)
+            {
+				this->vertexBuffer[vbp++] = (*it)->point[i]->p[j];
+            }
+            
+//            if((*it)->type == TRITYPE::J)
+//            {
+//                this->vertexBuffer[vbp++] = 0.8f;
+//                this->vertexBuffer[vbp++] = 0.0f;
+//                this->vertexBuffer[vbp++] = 0.0f;
+//            }
+//            if((*it)->type == TRITYPE::S)
+//            {
+//                this->vertexBuffer[vbp++] = 0.8f;
+//                this->vertexBuffer[vbp++] = 0.0f;
+//                this->vertexBuffer[vbp++] = 0.8f;
+//            }
+//            if((*it)->type == TRITYPE::T)
+//            {
+//                this->vertexBuffer[vbp++] = 0.0f;
+//                this->vertexBuffer[vbp++] = 0.8f;
+//                this->vertexBuffer[vbp++] = 0.8f;
+//            }
+		}
+	}
+	this->drawMode = GL_TRIANGLES;
 }
 
 void Mesh::delaunayTriangulation()
@@ -105,6 +153,7 @@ void Mesh::constraintBound()
 std::vector<Point*> Mesh::getSpinePoints(PointSet &ps)
 {
     cout << "get spine" << endl;
+    this->ps->sortPSet(ID);
     
     int baseID = ps.pSet.size();
     std::vector<Point*> spine;
@@ -205,9 +254,12 @@ std::vector<Point*> Mesh::getSpinePoints(PointSet &ps)
 			endPointList.push_back(endPoint);
 		}
 	}
-	for(int i = 0; i < pListList.size(); i++){
+	for(int i = 0; i < pListList.size(); i++)
+    {
 		for(int j = 0; j < eListList[i].size(); j++)
+        {
 			eListList[i][j]->unLink();
+        }
 	}
 	// handle the untouched triangles
 	vector<Edge*> delEdgeList;
@@ -337,4 +389,131 @@ std::vector<Point*> Mesh::getSpinePoints(PointSet &ps)
     
 	return spine;
 }
+
+
+void Mesh::loadP2tPoints(vector<p2t::Point*> polyline)
+{
+    this->release();
+//	this->pNum = (int)(polyline.size());
+    this->ps = new PointSet();
+    for(uint i = 0; i < polyline.size(); i++)
+    {
+		this->ps->addPoint(new Point(i, (float)polyline[i]->x, (float)polyline[i]->y, 0.0));
+    }
+}
+
+
+void Mesh::addP2tTriangles(vector<p2t::Triangle*> triangles)
+{
+    for(uint i=0; i<triangles.size(); i++)
+    {
+        p2t::Triangle t = *triangles[i];
+        p2t::Point a = *t.GetPoint(0);
+        p2t::Point b = *t.GetPoint(1);
+        p2t::Point c = *t.GetPoint(2);
+        Point* pa = NULL;
+        Point* pb = NULL;
+        Point* pc = NULL;
+        
+        // setting point
+        list<Point*>::iterator pit;
+        int num = 0;
+        for(pit = this->ps->pSet.begin(); pit != this->ps->pSet.end(); pit++)
+        {
+            
+            if((double)((*pit)->p[0]) == a.x && (double)((*pit)->p[1]) == a.y)
+            {
+                pa = *pit;
+                num++;
+            }
+            if((double)((*pit)->p[0]) == b.x && (double)((*pit)->p[1]) == b.y)
+            {
+                pb = *pit;
+                num++;
+            }
+            if((double)((*pit)->p[0]) == c.x && (double)((*pit)->p[1]) == c.y)
+            {
+                pc = *pit;
+                num++;
+            }
+            
+            
+        }
+        printf("check num : %d\n", num);
+        
+        Point* p1 = NULL;
+        Point* p2 = NULL;
+        
+        for(int j=0; j<3; j++){
+            if(j == 0)
+            {
+                p1 = pb;
+                p2 = pc;
+            }
+            if(j == 1)
+            {
+                p1 = pc;
+                p2 = pa;
+            }
+            if(j == 2)
+            {
+                p1 = pa;
+                p2 = pb;
+            }
+            
+            // link 
+            Edge* edge = new Edge(p1, p2);
+            edge->beLink();
+            
+            if(t.constrained_edge[j]){
+                edge->setType(External);
+            }
+            // Check the triangle candidate list
+            // It is no matter we check the list of p1 or p2
+            // If a candidate p' of p1 is linked to p2, it is also a candidate of p2, vice versa.
+            list<NeighborLit>::iterator it;
+            list<Triangle*> triList;
+            for(it = p1->triCandidate.begin(); it != p1->triCandidate.end(); it++)
+            {
+                Edge* e2 = (*it)->e;
+                Edge* e3 = (*it)->p->isLink(p2);
+                if(e3 != NULL)
+                {
+                    Triangle* tri = new Triangle(edge, e2, e3);
+                    triList.push_back(tri);
+                }
+            }
+            list<Triangle*>::iterator tit;
+            for(tit = triList.begin(); tit != triList.end(); tit++)
+            {
+                if((*tit)->beLink())// || (*tit)->midPoint[2] != 0)
+                    p1->parent->addTriangle(*tit);
+                else
+                    delete *tit;
+            }
+        }
+    }
+    
+    
+    // determin triangle type
+    // Score: Internal edge = 0; External edge = 1; J = 0; S = 1; T = 2;
+    list<Triangle*>::iterator tit;
+    for(tit = this->ps->triSet.begin(); tit != this->ps->triSet.end(); tit++)
+    {
+        int externalEdgeNum = 0;
+        for(int i=0; i<3; i++)
+        {
+            if((*tit)->edge[i]->type == External)
+            {
+                
+                (*tit)->vote(1);
+            }
+        }
+//        (*tit)->type = externalEdgeNum;
+    }
+    
+    
+}
+
+
 
