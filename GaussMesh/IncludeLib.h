@@ -49,6 +49,7 @@ using namespace glm;
 #include "drawFunction.h"
 #include "Mesh_structure.h"
 #include "ContourReader.h"
+#include "Triangulation.h"
 
 
 

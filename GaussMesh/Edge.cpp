@@ -22,21 +22,7 @@ void Edge::beLink()
 
 void Edge::unLink()
 {
-	// tL, tR of e1 and e2 are the same
-//	Triangle *tL = NULL;
-//	Triangle *tR = NULL;
-//    
-//    if(this->e1->tL != NULL)
-//    {
-//        if(this->e1->tL->type > 0)
-//            tL = this->e1->tL;
-//    }
-//    if(this->e1->tR != NULL)
-//    {
-//        if(this->e1->tR->type > 0)
-//            tR = this->e1->tR;
-//    }
-    
+	// tL, tR of e1 and e2 are the same    
     Triangle *tL = this->e1->tL;
     Triangle *tR = this->e1->tR;
     

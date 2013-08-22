@@ -392,11 +392,12 @@ int main( void )
                 vector<Point*> spinePointset;
                 // get spine points
                 spinePointset = mesh.getSpinePoints(*mesh.ps);
+                mesh.removeErrorTriangles(spinePointset);
                 // pruneAndSpine(*mesh.ps);
                 
                 
-                // mesh.loadTriangleFromPointSet(*mesh.ps);
-                mesh.loadEdgeFromPointSet(*mesh.ps);
+                mesh.loadTriangleFromPointSet(*mesh.ps);
+                // mesh.loadEdgeFromPointSet(*mesh.ps);
                 glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
                 
                 
@@ -421,91 +422,6 @@ int main( void )
                     }
                     
                 }
-                
-                // mesh.loadEdgeFromMouse(clickPoint);
-                // mesh.loadAndSortPointSet();
-                // mesh.loadEdgeFromMouse(clickPoint);
-                //
-                
-                // clock_t t1, t2, t3, t4;
-                // t1 = clock();
-                
-                // mesh.delaunayTriangulation();
-                // mesh.constraintBound();
-                // mesh.loadEdgeFromPointSet(*mesh.ps);
-                // 
-                
-//                t2 = clock();
-//                cout << "CDT time : " << (t2-t1)/(double)(CLOCKS_PER_SEC) << " sec" << endl;
-//                cout << "after CDT triangle number : " << mesh.ps->triSet.size() << endl;
-//                
-//                
-//                
-//                vector<Point*> spinePointset;
-//                // get spine points
-//                t3 = clock();
-//                spinePointset = mesh.getSpinePoints(*mesh.ps);
-//                t4 = clock();
-//                cout << "PruneSpine time : " << (t4-t3)/(double)(CLOCKS_PER_SEC) << " sec" << endl;
-//                cout << "after PruneSpine triangle number : " << mesh.ps->triSet.size() << endl;
-//                cout << "Spine point number : " << spinePointset.size() << endl;
-//
-//                
-//                
-//                
-//                mesh.loadEdgeFromPointSet(*mesh.ps);
-//                spineVertice.clear();
-//                spineColors.clear();
-//                
-//                vertices.clear();
-//                colors.clear();
-//                
-//                for (int i = 0; i < spinePointset.size(); i++)
-//                {
-//                    if(i > 0)
-//                    {
-//                        spineVertice.push_back(vec3(spinePointset[i-1]->p[0], spinePointset[i-1]->p[1], spinePointset[i-1]->p[2]));
-//                        spineVertice.push_back(vec3(spinePointset[i]->p[0], spinePointset[i]->p[1], spinePointset[i]->p[2]));
-//                        spineColors.push_back(vec3(255, 0, 0));
-//                        spineColors.push_back(vec3(255, 0, 0));
-//                    }
-//                    
-//                }
-                
-                
-                
-//                for(unsigned int i=0; i<triangles.size(); i++)
-//                {
-//                    p2t::Triangle t = *triangles[i];
-//                    p2t::Point a = *t.GetPoint(0);
-//                    p2t::Point b = *t.GetPoint(1);
-//                    p2t::Point c = *t.GetPoint(2);
-//                    
-//                    vertices.push_back(vec3(b.x, b.y, 0.0f));
-//                    vertices.push_back(vec3(c.x, c.y, 0.0f));
-//
-//                    vertices.push_back(vec3(c.x, c.y, 0.0f));
-//                    vertices.push_back(vec3(a.x, a.y, 0.0f));
-//
-//                    vertices.push_back(vec3(a.x, a.y, 0.0f));
-//                    vertices.push_back(vec3(b.x, b.y, 0.0f));
-//
-//                    
-//                    for(int i=0; i<3; i++){
-//                        if(t.constrained_edge[i]){
-//                            colors.push_back(vec3(255, 0, 255));
-//                            colors.push_back(vec3(255, 0, 255));
-//                        }
-//                        else{
-//                            colors.push_back(vec3(255, 255, 255));
-//                            colors.push_back(vec3(255, 255, 255));
-//                        }
-//                    }
-//                }
-                
-                
-                                
-                
                 
                 glBindBuffer(GL_ARRAY_BUFFER, spineVertexBuffer);
                 glBufferData(GL_ARRAY_BUFFER, spineVertice.size() * sizeof(vec3), &spineVertice[0], GL_STATIC_DRAW);

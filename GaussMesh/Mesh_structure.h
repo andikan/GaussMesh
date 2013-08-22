@@ -152,6 +152,7 @@ public:
     
     void loadP2tPoints(std::vector<p2t::Point*> polyline);
     void addP2tTriangles(std::vector<p2t::Triangle*> triangles);
+    void removeErrorTriangles(std::vector<Point*> spinePoints);
     
     
     void loadTriangleFromPointSet(const PointSet& ps);
