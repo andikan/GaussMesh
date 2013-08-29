@@ -149,10 +149,12 @@ public:
     void delaunayTriangulation();
     void constraintBound();
     std::vector<Point*> getSpinePoints(PointSet &ps);
+    std::vector<Point*> getJointTriangleSpinePoints(PointSet &ps);
     
     void loadP2tPoints(std::vector<p2t::Point*> polyline);
     void addP2tTriangles(std::vector<p2t::Triangle*> triangles);
-    void removeErrorTriangles(std::vector<Point*> spinePoints);
+    std::vector<Point*> getSkeletonPointSet(PointSet &ps);
+    void findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle, Triangle* prevJointTriangle);
     
     
     void loadTriangleFromPointSet(const PointSet& ps);

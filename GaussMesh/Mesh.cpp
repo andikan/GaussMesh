@@ -566,34 +566,240 @@ void Mesh::addP2tTriangles(vector<p2t::Triangle*> triangles)
 }
 
 
-void Mesh::removeErrorTriangles(vector<Point*> spinePoints)
+std::vector<Point*> Mesh::getSkeletonPointSet(PointSet &ps)
 {
-    vector<Triangle*> withoutSpineTriangle;
-    list<Triangle*>::const_iterator triangleIt;
-    for(triangleIt = this->ps->triSet.begin(); triangleIt != this->ps->triSet.end(); triangleIt++)
+    vector<Point*> skeletonPoints;
+    list<Triangle*>::const_iterator it;
+    Triangle* prevJointTriangle = NULL;
+    Triangle* currentTriangle = NULL;
+    int pointNum = 1;
+    
+    
+    for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
+	{
+        if((*it)->type == TRITYPE::J)
+        {
+            prevJointTriangle = *it;
+            currentTriangle = *it;
+            findNextSkeletonPoint(skeletonPoints, currentTriangle, currentTriangle, prevJointTriangle);
+            break;
+        }
+    }
+    
+    return skeletonPoints;
+}
+
+void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle,
+                                 Triangle* prevJointTriangle)
+{
+    if(currentTriangle == prevTriangle && currentTriangle->type == TRITYPE::J)    // first triangle
     {
-        Point* trianglePoints[3];
-        int haveSpine = 0;
-        trianglePoints[0] = (*triangleIt)->edge[0]->p1;
-        trianglePoints[1] = (*triangleIt)->edge[1]->p1;
-        trianglePoints[2] = (*triangleIt)->edge[2]->p1;
-        
+        Edge* edges[3];
+        int nearbyJointEdge = -1;
         for(int i=0; i<3; i++)
         {
-            for(int j=0; j<spinePoints.size(); j++)
+            edges[i] = currentTriangle->edge[i];
+            if((edges[i]->e1->tR != currentTriangle && edges[i]->e1->tR->type == TRITYPE::J) ||
+               (edges[i]->e1->tL != currentTriangle && edges[i]->e1->tL->type == TRITYPE::J))
             {
-                if(trianglePoints[i]->p[0] == spinePoints[j]->p[0] && trianglePoints[i]->p[1] == spinePoints[j]->p[1])
-                    haveSpine++;
+                nearbyJointEdge = i;
             }
         }
         
-        if(haveSpine == 0)
-            withoutSpineTriangle.push_back((*triangleIt));
+        for(int i=0; i<3; i++)
+        {
+            if(edges[i]->e1->tR != currentTriangle)
+            {
+                if(edges[i]->e1->tR->type == TRITYPE::S)
+                {
+                    if(nearbyJointEdge < 0)
+                    {
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                    }
+                    else if(nearbyJointEdge >= 0)
+                    {
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[nearbyJointEdge]->p1->p[0]+edges[nearbyJointEdge]->p2->p[0])/2 , (edges[nearbyJointEdge]->p1->p[1]+edges[nearbyJointEdge]->p2->p[1])/2, (edges[nearbyJointEdge]->p1->p[2]+edges[nearbyJointEdge]->p2->p[2])/2));
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                    }
+                }
+                if(edges[i]->e1->tR->type == TRITYPE::J)
+                {
+                    
+                }
+                findNextSkeletonPoint(skeletonPoints, edges[i]->e1->tR, currentTriangle, prevJointTriangle);
+            }
+            else if(edges[i]->e1->tL != currentTriangle)
+            {
+                if(edges[i]->e1->tL->type == TRITYPE::S)
+                {
+                    if(nearbyJointEdge < 0)
+                    {
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                    }
+                    else if(nearbyJointEdge >= 0)
+                    {
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[nearbyJointEdge]->p1->p[0]+edges[nearbyJointEdge]->p2->p[0])/2 , (edges[nearbyJointEdge]->p1->p[1]+edges[nearbyJointEdge]->p2->p[1])/2, (edges[nearbyJointEdge]->p1->p[2]+edges[nearbyJointEdge]->p2->p[2])/2));
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                    }
+                }
+                if(edges[i]->e1->tL->type == TRITYPE::J)
+                {
+                    
+                }
+                findNextSkeletonPoint(skeletonPoints, edges[i]->e1->tL, currentTriangle, prevJointTriangle);
+            }
+        }
         
+        return;
     }
-    printf("without spine triangle number : %ld\n", withoutSpineTriangle.size());
-    
-}
+    else if(currentTriangle != prevTriangle && currentTriangle->type == TRITYPE::J)
+    {
+        prevJointTriangle = currentTriangle;
+        
+        // find prev edge
+        Edge* prevEdge;
+        for(int i=0; i<3; i++)
+        {
+            for(int j=0; j<3; j++)
+            {
+                if(prevTriangle->edge[i] == currentTriangle->edge[j])
+                {
+                    prevEdge = currentTriangle->edge[j];
+                }
+            }
+        }
+        
+        
+        Edge* edges[3];
+        int nearbyJointEdge = -1;
+        for(int i=0; i<3; i++)
+        {
+            edges[i] = currentTriangle->edge[i];
+            if((edges[i]->e1->tR != currentTriangle && edges[i]->e1->tR->type == TRITYPE::J) ||
+               (edges[i]->e1->tL != currentTriangle && edges[i]->e1->tL->type == TRITYPE::J))
+            {
+                nearbyJointEdge = i;
+            }
+        }
+        
+        
+        // connect to prev triangle
+        if(nearbyJointEdge >= 0 && edges[nearbyJointEdge] == prevEdge)
+        {
+            // printf("prev is joint trinagle\n");
+        }
+        else if(nearbyJointEdge >= 0 && edges[nearbyJointEdge] != prevEdge)
+        {
+            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[nearbyJointEdge]->p1->p[0]+edges[nearbyJointEdge]->p2->p[0])/2 , (edges[nearbyJointEdge]->p1->p[1]+edges[nearbyJointEdge]->p2->p[1])/2, (edges[nearbyJointEdge]->p1->p[2]+edges[nearbyJointEdge]->p2->p[2])/2));
+        }
+        else
+        {
+            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+        }
+        
+        
+        
+        for(int i=0; i<3; i++)
+        {
+            if(edges[i] != prevEdge)
+            {
+                if(edges[i]->e1->tR != currentTriangle)
+                {
+                    if(edges[i]->e1->tR->type == TRITYPE::S)
+                    {
+                        if(nearbyJointEdge < 0)
+                        {
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                        }
+                        else if(nearbyJointEdge >= 0)
+                        {
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[nearbyJointEdge]->p1->p[0]+edges[nearbyJointEdge]->p2->p[0])/2 , (edges[nearbyJointEdge]->p1->p[1]+edges[nearbyJointEdge]->p2->p[1])/2, (edges[nearbyJointEdge]->p1->p[2]+edges[nearbyJointEdge]->p2->p[2])/2));
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                        }
 
+                    }
+                    if(edges[i]->e1->tR->type == TRITYPE::J)
+                    {
+                        
+                    }
+                    findNextSkeletonPoint(skeletonPoints, edges[i]->e1->tR, currentTriangle, prevJointTriangle);
+                }
+                else if(edges[i]->e1->tL != currentTriangle)
+                {
+                    if(edges[i]->e1->tL->type == TRITYPE::S)
+                    {
+                        if(nearbyJointEdge < 0)
+                        {
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                        }
+                        else if(nearbyJointEdge >= 0)
+                        {
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[nearbyJointEdge]->p1->p[0]+edges[nearbyJointEdge]->p2->p[0])/2 , (edges[nearbyJointEdge]->p1->p[1]+edges[nearbyJointEdge]->p2->p[1])/2, (edges[nearbyJointEdge]->p1->p[2]+edges[nearbyJointEdge]->p2->p[2])/2));
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                        }
+
+                    }
+                    if(edges[i]->e1->tL->type == TRITYPE::J)
+                    {
+                        
+                    }
+                    findNextSkeletonPoint(skeletonPoints, edges[i]->e1->tL, currentTriangle, prevJointTriangle);
+                }
+            }
+        }
+        
+        return;
+    }
+    else if(currentTriangle->type == TRITYPE::S)
+    {
+        
+        // find prev edge
+        Edge* prevEdge;
+        for(int i=0; i<3; i++)
+        {
+            for(int j=0; j<3; j++)
+            {
+                if(prevTriangle->edge[i] == currentTriangle->edge[j])
+                    prevEdge = currentTriangle->edge[j];
+            }
+        }
+        
+        
+        Edge* edges[3];
+        for(int i=0; i<3; i++)
+            edges[i] = currentTriangle->edge[i];
+        
+        for(int i=0; i<3; i++)
+        {
+            if(edges[i] != prevEdge && edges[i]->type == Internal)
+            {
+                if(edges[i]->e1->tR != currentTriangle)
+                {
+                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                    findNextSkeletonPoint(skeletonPoints, edges[i]->e1->tR, currentTriangle, prevJointTriangle);
+                }
+                else if(edges[i]->e1->tL != currentTriangle)
+                {
+                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (edges[i]->p1->p[0]+edges[i]->p2->p[0])/2 , (edges[i]->p1->p[1]+edges[i]->p2->p[1])/2, (edges[i]->p1->p[2]+edges[i]->p2->p[2])/2));
+                    findNextSkeletonPoint(skeletonPoints, edges[i]->e1->tL, currentTriangle, prevJointTriangle);
+                }
+            }
+        }
+        
+        return;
+    }
+    else if(currentTriangle->type == TRITYPE::T)
+    {
+        return;
+    }    
+}
 
 

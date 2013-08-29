@@ -365,7 +365,6 @@ int main( void )
                 
                 for(int i=0; i<contourpoints.size(); i++)
                 {
-                    // clickPoint.push_back(vec3(contourpoints[i]->p[0], contourpoints[i]->p[1], contourpoints[i]->p[2]));
                     polyline.push_back(new p2t::Point(contourpoints[i]->p[0], contourpoints[i]->p[1]));
                 }
                 
@@ -390,14 +389,13 @@ int main( void )
                 
                 
                 vector<Point*> spinePointset;
+                spinePointset = mesh.getSkeletonPointSet(*mesh.ps);
                 // get spine points
-                spinePointset = mesh.getSpinePoints(*mesh.ps);
-                mesh.removeErrorTriangles(spinePointset);
-                // pruneAndSpine(*mesh.ps);
+                // spinePointset = mesh.getSpinePoints(*mesh.ps);
                 
                 
-                mesh.loadTriangleFromPointSet(*mesh.ps);
-                // mesh.loadEdgeFromPointSet(*mesh.ps);
+                // mesh.loadTriangleFromPointSet(*mesh.ps);
+                mesh.loadEdgeFromPointSet(*mesh.ps);
                 glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
                 
                 
@@ -413,14 +411,11 @@ int main( void )
                 
                 for (int i = 0; i < spinePointset.size(); i++)
                 {
-                    if(i > 0)
-                    {
-                        spineVertice.push_back(vec3(spinePointset[i-1]->p[0], spinePointset[i-1]->p[1], spinePointset[i-1]->p[2]));
-                        spineVertice.push_back(vec3(spinePointset[i]->p[0], spinePointset[i]->p[1], spinePointset[i]->p[2]));
-                        spineColors.push_back(vec3(255, 0, 0));
-                        spineColors.push_back(vec3(255, 0, 0));
-                    }
-                    
+                    spineVertice.push_back(vec3(spinePointset[i]->p[0], spinePointset[i]->p[1], spinePointset[i]->p[2]));
+                    if(i == 0 || i == 1)
+                        spineColors.push_back(vec3(255, 0, 255));
+                    else
+                        spineColors.push_back(vec3(0, 255, 255));
                 }
                 
                 glBindBuffer(GL_ARRAY_BUFFER, spineVertexBuffer);
@@ -537,9 +532,9 @@ int main( void )
 		glVertexAttribPointer(vertexColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
         // Draw spine point
         glLineWidth(2.0);
-        glPointSize(5.0);
+        glPointSize(8.0);
         glEnable(GL_POINT_SMOOTH);
-        glDrawArrays(GL_POINTS, 0, (int)spineVertice.size());
+        glDrawArrays(GL_LINES, 0, (int)spineVertice.size());
         
         
         
