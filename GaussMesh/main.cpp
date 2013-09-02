@@ -241,10 +241,10 @@ int main( void )
                 // point insert to mesh
                 mesh.loadAndSortPointSet();
                 // delaunayTriangulation
-                mesh.delaunayTriangulation();
+                // mesh.delaunayTriangulation();
                 mesh.loadEdgeFromPointSet(*mesh.ps);
                 // constraintBound
-                mesh.constraintBound();
+                // mesh.constraintBound();
                 mesh.loadEdgeFromPointSet(*mesh.ps);
                 
                 
@@ -274,7 +274,7 @@ int main( void )
                 cout << "key press\n";
                 vector<Point*> spinePointset;
                 // get spine points
-                spinePointset = mesh.getSpinePoints(*mesh.ps);
+                // spinePointset = mesh.getSpinePoints(*mesh.ps);
                 mesh.loadEdgeFromPointSet(*mesh.ps);
                 spineVertice.clear();
                 spineColors.clear();

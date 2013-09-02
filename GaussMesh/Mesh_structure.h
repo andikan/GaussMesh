@@ -134,6 +134,8 @@ public:
     std::list<Triangle*> triSet;
 };
 
+
+enum MERGETYPE {NONE, JJ, JSJ, PREJSJ, JJJ};
 class Mesh
 {
 public:
@@ -154,7 +156,7 @@ public:
     void loadP2tPoints(std::vector<p2t::Point*> polyline);
     void addP2tTriangles(std::vector<p2t::Triangle*> triangles);
     std::vector<Point*> getSkeletonPointSet(PointSet &ps);
-    void findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle, Triangle* prevJointTriangle);
+    void findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle, Triangle* prevJointTriangle, int prevMergeType);
     
     
     void loadTriangleFromPointSet(const PointSet& ps);
