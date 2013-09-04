@@ -573,6 +573,7 @@ std::vector<Point*> Mesh::getSkeletonPointSet(PointSet &ps)
     Triangle* prevJointTriangle = NULL;
     Triangle* currentTriangle = NULL;
     int pointNum = 1;
+    skeletonPoints.clear();
     
     
     for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
@@ -592,6 +593,7 @@ std::vector<Point*> Mesh::getSkeletonPointSet(PointSet &ps)
 void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle,
                                  Triangle* prevJointTriangle, int prevMergeType)
 {
+    /* First triangle : JOINT triangle */
     if(currentTriangle == prevTriangle && currentTriangle->type == TRITYPE::J)    // first triangle
     {
         Edge* edges[3];
@@ -735,7 +737,7 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
             // exist JJJ
             if(existNearbyJointTriangleNum > 0)
             {
-                findNextSkeletonPoint(skeletonPoints, triangle1, currentTriangle, prevJointTriangle, MERGETYPE::NONE);
+                findNextSkeletonPoint(skeletonPoints, triangle1, currentTriangle, prevJointTriangle, MERGETYPE::PREJJJ);
             }
             else // this is JJ
             {
@@ -788,10 +790,10 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                 }
             }
         }
-        else // without nearby triangle, need to find JSJ
+        else if(nearbyJointEdges.size() == 0) // without nearby triangle, need to find JSJ
         {
             // find JSJ
-            int existJSJ = MERGETYPE::NONE;
+            int existJSJedge[3] = {MERGETYPE::NONE, MERGETYPE::NONE, MERGETYPE::NONE};
             for(int i=0; i<3; i++)
             {
                 Triangle* nextTriangle = NULL;
@@ -814,12 +816,33 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                                 nextNextTriangle = nextTriangle->edge[j]->e1->tL;
                             
                             if(nextNextTriangle->type == TRITYPE::J && nextNextTriangle != currentTriangle)
-                                existJSJ = MERGETYPE::PREJSJ;
+                                existJSJedge[i] = MERGETYPE::PREJSJ;
                         }
                     }
                 }
             }
             
+            // if there is no JSJ nearby this J, set this J
+            if(existJSJedge[0] == MERGETYPE::NONE && existJSJedge[1] == MERGETYPE::NONE && existJSJedge[2] == MERGETYPE::NONE)
+            {
+                for(int i=0; i<3; i++)
+                {
+                    Triangle* nextTriangle = NULL;
+                    if(currentTriangle->edge[i]->e1->tR != currentTriangle)
+                        nextTriangle = currentTriangle->edge[i]->e1->tR;
+                    else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
+                        nextTriangle = currentTriangle->edge[i]->e1->tL;
+                    
+                    if(nextTriangle->type != TRITYPE::T)
+                    {
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+                    }
+                    
+                }
+            }
+
+                    
             // find next triangle from current triangle
             for(int i=0; i<3; i++)
             {
@@ -831,14 +854,15 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                 
                 if(nextTriangle->type != TRITYPE::T)
                 {
-                    findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, existJSJ);
+                    findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, existJSJedge[i]);
                 }
             }
         }
         
         return;
     }
-    
+    /* First triangle : JOINT triangle END */
+    /* Next triangle : JOINT triangle */
     else if(currentTriangle != prevTriangle && currentTriangle->type == TRITYPE::J)
     {
         prevJointTriangle = currentTriangle;
@@ -1045,7 +1069,7 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                 }
             }
         }
-        else // without nearby joint triangle, need to find JSJ
+        else if(nearbyJointEdges.size() == 0) // without nearby joint triangle, need to find JSJ
         {
             Edge* prevEdge;
             // find prev edge
@@ -1059,7 +1083,7 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
             }
             
             // find JSJ
-            int existJSJ = MERGETYPE::NONE;
+            int existJSJedge[3] = {MERGETYPE::NONE, MERGETYPE::NONE, MERGETYPE::NONE};
             for(int i=0; i<3; i++)
             {
                 if(currentTriangle->edge[i] != prevEdge)
@@ -1085,9 +1109,37 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                                     nextNextTriangle = nextTriangle->edge[j]->e1->tL;
                                 
                                 if(nextNextTriangle->type == TRITYPE::J && nextNextTriangle != currentTriangle)
-                                    existJSJ = MERGETYPE::PREJSJ;
+                                    existJSJedge[i] = MERGETYPE::PREJSJ;
                             }
                         }
+                    }
+                }
+            }
+            
+            // if there is no JSJ nearby this J, set this J
+            if(existJSJedge[0] == MERGETYPE::NONE && existJSJedge[1] == MERGETYPE::NONE && existJSJedge[2] == MERGETYPE::NONE)
+            {
+                for(int i=0; i<3; i++)
+                {
+                    if(currentTriangle->edge[i] != prevEdge)
+                    {
+                        Triangle* nextTriangle = NULL;
+                        if(currentTriangle->edge[i]->e1->tR != currentTriangle)
+                            nextTriangle = currentTriangle->edge[i]->e1->tR;
+                        else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
+                            nextTriangle = currentTriangle->edge[i]->e1->tL;
+                        
+                        if(nextTriangle->type != TRITYPE::T)
+                        {
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+                        }
+                    }
+                    
+                    else
+                    {
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
                     }
                 }
             }
@@ -1105,7 +1157,7 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                     
                     if(nextTriangle->type != TRITYPE::T)
                     {
-                        findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, existJSJ);
+                        findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, existJSJedge[i]);
                     }
                 }
             }
@@ -1113,6 +1165,9 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
         
         return;
     }
+    /* Next triangle : JOINT triangle END */
+    
+    /* Next triangle : SLEEVE triangle */
     else if(currentTriangle->type == TRITYPE::S)
     {
         if(prevTriangle->type == TRITYPE::J)
@@ -1204,7 +1259,7 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                         }
                     }
                 }
-                else // prevMergeType == JJ/JSJ/JJJ
+                else // prevMergeType == JJ/JSJ
                 {
                     // find prev edge
                     Edge* prevEdge;
@@ -1241,24 +1296,24 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
             else if(nearbyJointEdges.size() == 1)
             {                
                 
-                if(prevMergeType == MERGETYPE::NONE)
-                {
-                    // set prev triangle edge
-                    for(int i=0; i<3; i++)
-                    {
-                        Triangle* nextTriangle = NULL;
-                        if(prevTriangle->edge[i]->e1->tR != prevTriangle)
-                            nextTriangle = prevTriangle->edge[i]->e1->tR;
-                        else if(prevTriangle->edge[i]->e1->tL != prevTriangle)
-                            nextTriangle = prevTriangle->edge[i]->e1->tL;
-                        
-                        if(nextTriangle->type != TRITYPE::T)
-                        {
-                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, prevTriangle->midPoint[0], prevTriangle->midPoint[1], prevTriangle->midPoint[2]));
-                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevTriangle->edge[i]->p1->p[0]+prevTriangle->edge[i]->p2->p[0])/2 , (prevTriangle->edge[i]->p1->p[1]+prevTriangle->edge[i]->p2->p[1])/2, (prevTriangle->edge[i]->p1->p[2]+prevTriangle->edge[i]->p2->p[2])/2));
-                        }
-                    }
-                }
+//                if(prevMergeType == MERGETYPE::NONE)
+//                {
+//                    // set prev triangle edge
+//                    for(int i=0; i<3; i++)
+//                    {
+//                        Triangle* nextTriangle = NULL;
+//                        if(prevTriangle->edge[i]->e1->tR != prevTriangle)
+//                            nextTriangle = prevTriangle->edge[i]->e1->tR;
+//                        else if(prevTriangle->edge[i]->e1->tL != prevTriangle)
+//                            nextTriangle = prevTriangle->edge[i]->e1->tL;
+//                        
+//                        if(nextTriangle->type != TRITYPE::T)
+//                        {
+//                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, prevTriangle->midPoint[0], prevTriangle->midPoint[1], prevTriangle->midPoint[2]));
+//                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevTriangle->edge[i]->p1->p[0]+prevTriangle->edge[i]->p2->p[0])/2 , (prevTriangle->edge[i]->p1->p[1]+prevTriangle->edge[i]->p2->p[1])/2, (prevTriangle->edge[i]->p1->p[2]+prevTriangle->edge[i]->p2->p[2])/2));
+//                        }
+//                    }
+//                }
                 
                 // find prev edge
                 Edge* prevEdge;
@@ -1282,11 +1337,12 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                         else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
                             nextTriangle = currentTriangle->edge[i]->e1->tL;
                         
-                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
-                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
-                        
-                        if(prevTriangle != nextTriangle)
+                        if(prevTriangle != nextTriangle && nextTriangle->type != TRITYPE::T)
+                        {
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
                             findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, MERGETYPE::NONE);
+                        }
                     }
                 }
             }
@@ -1315,9 +1371,12 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                     else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
                         nextTriangle = currentTriangle->edge[i]->e1->tL;
                     
-                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
-                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
-                    findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, MERGETYPE::NONE);
+                    if(prevTriangle != nextTriangle && nextTriangle->type != TRITYPE::T)
+                    {
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+                        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+                        findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, MERGETYPE::NONE);
+                    }
                 }
             }
             
@@ -1325,10 +1384,19 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
 
         return;
     }
+    /* Next triangle : SLEEVE triangle END */
+    
+    /* Next triangle : TERMINAL triangle */
     else if(currentTriangle->type == TRITYPE::T)
     {
         return;
     }    
+}
+
+
+std::vector<Point*> Mesh::removeTerminalTriangle(PointSet &ps)
+{
+    
 }
 
 

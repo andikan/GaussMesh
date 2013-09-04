@@ -139,6 +139,11 @@ int main( void )
 	glGenBuffers(1, &spineVertexBuffer);
     GLuint spineColorBuffer;
 	glGenBuffers(1, &spineColorBuffer);
+    
+    GLuint jointVertexBuffer;
+	glGenBuffers(1, &jointVertexBuffer);
+    GLuint jointColorBuffer;
+	glGenBuffers(1, &jointColorBuffer);
 
     
     GLuint axesVertexBuffer;
@@ -156,14 +161,19 @@ int main( void )
     bool mouseDrawPress = false;
     bool spineDetect = false;
     bool readContourData = false;
+    int readContourDataCount = 0;
     vector<vec3> clickPoint;
     vector<vec3> vertices;
 	vector<vec3> colors;
     
     vector<vec3> spineVertice;
     vector<vec3> spineColors;
+    
+    vector<vec3> jointVertice;
+    vector<vec3> jointColors;
 
     Mesh mesh;
+    Mesh findSkeletonMesh;
     GLenum drawMode;
     
     int filenum = 0;
@@ -321,7 +331,11 @@ int main( void )
         {
             if(readContourData)
             {
-                readContourData = false;
+                readContourDataCount++;
+                if(readContourDataCount%9 == 0)
+                {
+                    readContourData = false;
+                }
             }
             
             if( filenum == 31 )
@@ -332,6 +346,7 @@ int main( void )
             if(!readContourData)
             {
                 filenum = filenum + 1;
+                // filenum = 6;
                 double xpos, ypos;
                 int vertexCount;
                 vector<Point*> contourpoints;
@@ -383,15 +398,21 @@ int main( void )
                 
                 
                 mesh.loadP2tPoints(polyline);
+                findSkeletonMesh.loadP2tPoints(polyline);
                 cout << "mesh vertex num : " << mesh.ps->pSet.size() << endl;
                 mesh.addP2tTriangles(triangles);
+                findSkeletonMesh.addP2tTriangles(triangles);
                 
                 
                 
-                vector<Point*> spinePointset;
-                spinePointset = mesh.getSkeletonPointSet(*mesh.ps);
+                vector<Point*> spineEdgeSet;
+                vector<Point*> jointPointSet;
+                spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*mesh.ps);
+                //jointPointSet = spineEdgeSet;
+                
+                cout << "spineEdge size: " << spineEdgeSet.size() / 2 << endl;
                 // get spine points
-                // spinePointset = mesh.getSpinePoints(*mesh.ps);
+                // mesh.getSpinePoints(*mesh.ps);
                 
                 
                 // mesh.loadTriangleFromPointSet(*mesh.ps);
@@ -403,19 +424,26 @@ int main( void )
                 colors.clear();
                 spineVertice.clear();
                 spineColors.clear();
+                jointVertice.clear();
+                jointColors.clear();
                 
                 for (int i = 0; i < mesh.pNum; i++) {
                     vertices.push_back(vec3(mesh.vertexBuffer[i*3], mesh.vertexBuffer[i*3+1], mesh.vertexBuffer[i*3+2]));
                     colors.push_back(vec3(255, 255, 255));
                 }
                 
-                for (int i = 0; i < spinePointset.size(); i++)
+                for (int i = 0; i < spineEdgeSet.size(); i++)
                 {
-                    spineVertice.push_back(vec3(spinePointset[i]->p[0], spinePointset[i]->p[1], spinePointset[i]->p[2]));
+                    spineVertice.push_back(vec3(spineEdgeSet[i]->p[0], spineEdgeSet[i]->p[1], spineEdgeSet[i]->p[2]));
                     if(i == 0 || i == 1)
                         spineColors.push_back(vec3(255, 0, 255));
                     else
                         spineColors.push_back(vec3(0, 255, 255));
+                }
+                
+                for (int i = 0; i < jointPointSet.size(); i++) {
+                    jointVertice.push_back(vec3(jointPointSet[i]->p[0], jointPointSet[i]->p[1], jointPointSet[i]->p[2]));
+                    jointColors.push_back(vec3(255, 255, 0));
                 }
                 
                 glBindBuffer(GL_ARRAY_BUFFER, spineVertexBuffer);
@@ -423,6 +451,12 @@ int main( void )
                 
                 glBindBuffer(GL_ARRAY_BUFFER, spineColorBuffer);
                 glBufferData(GL_ARRAY_BUFFER, spineColors.size() * sizeof(vec3), &spineColors[0], GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, jointVertexBuffer);
+                glBufferData(GL_ARRAY_BUFFER, jointVertice.size() * sizeof(vec3), &jointVertice[0], GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, jointColorBuffer);
+                glBufferData(GL_ARRAY_BUFFER, jointColors.size() * sizeof(vec3), &jointColors[0], GL_STATIC_DRAW);
                 
                 glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
                 glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
@@ -435,6 +469,7 @@ int main( void )
                 drawMode = mesh.drawMode;
 
                 readContourData = true;
+                readContourDataCount++;
             }
 
             
@@ -457,7 +492,7 @@ int main( void )
         // Camera matrix
         glm::mat4 View;
         if(!mouseDrawPress)
-            View = glm::lookAt(glm::vec3(50,50,450), glm::vec3(0,0,0), glm::vec3(0,1,0) );
+            View = glm::lookAt(glm::vec3(50,50,400), glm::vec3(0,0,0), glm::vec3(0,1,0) );
         else
             View = glm::lookAt(glm::vec3(0,0,10), glm::vec3(0,0,0), glm::vec3(0,1,0) );
         
@@ -535,6 +570,23 @@ int main( void )
         glPointSize(8.0);
         glEnable(GL_POINT_SMOOTH);
         glDrawArrays(GL_LINES, 0, (int)spineVertice.size());
+        
+        
+//        // Draw spine point
+//        // 1rst attribute buffer : vertices
+//		glEnableVertexAttribArray(vertexPosition_modelspaceID);
+//		glBindBuffer(GL_ARRAY_BUFFER, jointVertexBuffer);
+//		glVertexAttribPointer( vertexPosition_modelspaceID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+//        
+//		// 2nd attribute buffer : colors
+//		glEnableVertexAttribArray(vertexColorID);
+//		glBindBuffer(GL_ARRAY_BUFFER, jointColorBuffer);
+//		glVertexAttribPointer(vertexColorID, 3, GL_FLOAT, GL_FALSE, 0, (void*)0 );
+//        // Draw spine point
+//        glPointSize(8.0);
+//        glEnable(GL_POINT_SMOOTH);
+//        glDrawArrays(GL_POINTS, 0, (int)spineVertice.size());
+
         
         
         

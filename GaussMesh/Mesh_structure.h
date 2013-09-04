@@ -135,7 +135,7 @@ public:
 };
 
 
-enum MERGETYPE {NONE, JJ, JSJ, PREJSJ, JJJ};
+enum MERGETYPE {NONE, JJ, JSJ, PREJSJ, JJJ, PREJJJ};
 class Mesh
 {
 public:
@@ -157,6 +157,8 @@ public:
     void addP2tTriangles(std::vector<p2t::Triangle*> triangles);
     std::vector<Point*> getSkeletonPointSet(PointSet &ps);
     void findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle, Triangle* prevJointTriangle, int prevMergeType);
+    std::vector<Point*> removeTerminalTriangle(PointSet &ps);
+    
     
     
     void loadTriangleFromPointSet(const PointSet& ps);
