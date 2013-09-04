@@ -1394,9 +1394,86 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
 }
 
 
-std::vector<Point*> Mesh::removeTerminalTriangle(PointSet &ps)
+void Mesh::removeTerminalTriangle(PointSet &ps)
 {
+    vector<Triangle*> removeTerminalTriangles;
+    list<Triangle*>::const_iterator it;
+    int terminalTriangleNum = 0;
+    removeTerminalTriangles.clear();
     
+    for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
+	{
+        if((*it)->type == TRITYPE::T)
+        {
+            Triangle* terminalTriangle = *it;
+            Triangle* nextTriangle = NULL;
+            
+            // search the terminal triangle edges
+            for(int i=0; i<3; i++)
+            {
+                if(terminalTriangle->edge[i]->type == EDGETYPE::Internal)
+                {
+                    if(terminalTriangle->edge[i]->e1->tR != terminalTriangle)
+                        nextTriangle = terminalTriangle->edge[i]->e1->tR;
+                    else if(terminalTriangle->edge[i]->e1->tL != terminalTriangle)
+                        nextTriangle = terminalTriangle->edge[i]->e1->tL;
+                    
+                
+                    if(nextTriangle->type == TRITYPE::J)
+                    {
+                        // check if joint triangle connect with two terminal triangle
+                        // if true, do not push in remove triangles vector
+                        bool withTwoTerminal = false;
+                        for(int j=0; j<3; j++)
+                        {
+                            Triangle* aroundTriangle = NULL;
+                            if(nextTriangle->edge[j]->e1->tR != nextTriangle)
+                                aroundTriangle = nextTriangle->edge[j]->e1->tR;
+                            else if(nextTriangle->edge[j]->e1->tL != nextTriangle)
+                                aroundTriangle = nextTriangle->edge[j]->e1->tL;
+                            
+                            if(aroundTriangle != terminalTriangle && aroundTriangle->type == TRITYPE::T)
+                                withTwoTerminal = true;
+                        }
+                        
+                        if(!withTwoTerminal)
+                            removeTerminalTriangles.push_back(terminalTriangle);
+                    }
+                }
+            }
+        }
+    }
+    
+    // remove terminal triangle connect with joint triangle
+    for(uint i=0; i<removeTerminalTriangles.size(); i++)
+    {
+        Triangle* terminalTriangle = removeTerminalTriangles[i];
+        Triangle* jointTriangle = NULL;
+        Edge* connectEdge = NULL;
+        
+        // search the terminal triangle connect with joint triangle
+        for(int j=0; j<3; j++)
+        {
+            if(terminalTriangle->edge[j]->type == EDGETYPE::Internal)
+            {
+                if(terminalTriangle->edge[j]->e1->tR != terminalTriangle)
+                    jointTriangle = terminalTriangle->edge[j]->e1->tR;
+                else if(terminalTriangle->edge[j]->e1->tL != terminalTriangle)
+                    jointTriangle = terminalTriangle->edge[j]->e1->tL;
+                
+                connectEdge = terminalTriangle->edge[j];
+            }
+            else
+            {
+                terminalTriangle->edge[j]->unLink();
+            }
+        }
+        
+        connectEdge->setType(EDGETYPE::External);
+    }
+    
+    printf("REMOVE terminal triangle num : %ld\n", removeTerminalTriangles.size());
+    return;
 }
 
 

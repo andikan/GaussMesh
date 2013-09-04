@@ -407,8 +407,9 @@ int main( void )
                 
                 vector<Point*> spineEdgeSet;
                 vector<Point*> jointPointSet;
-                spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*mesh.ps);
-                //jointPointSet = spineEdgeSet;
+                findSkeletonMesh.removeTerminalTriangle(*findSkeletonMesh.ps);
+                spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*findSkeletonMesh.ps);
+                // jointPointSet = spineEdgeSet;
                 
                 cout << "spineEdge size: " << spineEdgeSet.size() / 2 << endl;
                 // get spine points
@@ -416,6 +417,7 @@ int main( void )
                 
                 
                 // mesh.loadTriangleFromPointSet(*mesh.ps);
+                // findSkeletonMesh.loadEdgeFromPointSet(*findSkeletonMesh.ps);
                 mesh.loadEdgeFromPointSet(*mesh.ps);
                 glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
                 
@@ -426,6 +428,11 @@ int main( void )
                 spineColors.clear();
                 jointVertice.clear();
                 jointColors.clear();
+                
+//                for (int i = 0; i < findSkeletonMesh.pNum; i++) {
+//                    vertices.push_back(vec3(findSkeletonMesh.vertexBuffer[i*3], findSkeletonMesh.vertexBuffer[i*3+1], findSkeletonMesh.vertexBuffer[i*3+2]));
+//                    colors.push_back(vec3(255, 255, 255));
+//                }
                 
                 for (int i = 0; i < mesh.pNum; i++) {
                     vertices.push_back(vec3(mesh.vertexBuffer[i*3], mesh.vertexBuffer[i*3+1], mesh.vertexBuffer[i*3+2]));
@@ -467,6 +474,7 @@ int main( void )
                 
                 // drawMode = GL_LINES;
                 drawMode = mesh.drawMode;
+                // drawMode = findSkeletonMesh.drawMode;
 
                 readContourData = true;
                 readContourDataCount++;
