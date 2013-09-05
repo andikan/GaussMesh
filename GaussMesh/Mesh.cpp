@@ -574,6 +574,7 @@ std::vector<Point*> Mesh::getSkeletonPointSet(PointSet &ps)
     Triangle* currentTriangle = NULL;
     int pointNum = 1;
     skeletonPoints.clear();
+    bool existJointTriangle = false;
     
     
     for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
@@ -583,7 +584,34 @@ std::vector<Point*> Mesh::getSkeletonPointSet(PointSet &ps)
             prevJointTriangle = *it;
             currentTriangle = *it;
             findNextSkeletonPoint(skeletonPoints, currentTriangle, currentTriangle, prevJointTriangle, MERGETYPE::NONE);
+            existJointTriangle = true;
             break;
+        }
+    }
+    
+    // if there is no joint triangle
+    if(!existJointTriangle)
+    {
+        for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
+        {
+            if((*it)->type == TRITYPE::T)
+            {
+                Triangle* nextTriangle = NULL;
+                currentTriangle = *it;
+                for(int i=0; i<3; i++)
+                {
+                    if(currentTriangle->edge[i]->type == EDGETYPE::Internal)
+                    {
+                        if(currentTriangle->edge[i]->e1->tR != currentTriangle)
+                            nextTriangle = currentTriangle->edge[i]->e1->tR;
+                        else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
+                            nextTriangle = currentTriangle->edge[i]->e1->tL;
+                        
+                        findNextSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle, prevJointTriangle, MERGETYPE::NONE);
+                        break;
+                    }
+                }
+            }
         }
     }
     
@@ -1294,27 +1322,7 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
                 }
             }
             else if(nearbyJointEdges.size() == 1)
-            {                
-                
-//                if(prevMergeType == MERGETYPE::NONE)
-//                {
-//                    // set prev triangle edge
-//                    for(int i=0; i<3; i++)
-//                    {
-//                        Triangle* nextTriangle = NULL;
-//                        if(prevTriangle->edge[i]->e1->tR != prevTriangle)
-//                            nextTriangle = prevTriangle->edge[i]->e1->tR;
-//                        else if(prevTriangle->edge[i]->e1->tL != prevTriangle)
-//                            nextTriangle = prevTriangle->edge[i]->e1->tL;
-//                        
-//                        if(nextTriangle->type != TRITYPE::T)
-//                        {
-//                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, prevTriangle->midPoint[0], prevTriangle->midPoint[1], prevTriangle->midPoint[2]));
-//                            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevTriangle->edge[i]->p1->p[0]+prevTriangle->edge[i]->p2->p[0])/2 , (prevTriangle->edge[i]->p1->p[1]+prevTriangle->edge[i]->p2->p[1])/2, (prevTriangle->edge[i]->p1->p[2]+prevTriangle->edge[i]->p2->p[2])/2));
-//                        }
-//                    }
-//                }
-                
+            {
                 // find prev edge
                 Edge* prevEdge;
                 for(int i=0; i<3; i++)
@@ -1394,7 +1402,7 @@ void Mesh::findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* 
 }
 
 
-void Mesh::removeTerminalTriangle(PointSet &ps)
+void Mesh::removeTerminalTriangleWithJoint(PointSet &ps)
 {
     vector<Triangle*> removeTerminalTriangles;
     list<Triangle*>::const_iterator it;
@@ -1472,7 +1480,72 @@ void Mesh::removeTerminalTriangle(PointSet &ps)
         connectEdge->setType(EDGETYPE::External);
     }
     
-    printf("REMOVE terminal triangle num : %ld\n", removeTerminalTriangles.size());
+    return;
+}
+
+
+void Mesh::removeTerminalTriangleWithSleeve(PointSet &ps)
+{
+    vector<Triangle*> removeTerminalTriangles;
+    list<Triangle*>::const_iterator it;
+    int terminalTriangleNum = 0;
+    removeTerminalTriangles.clear();
+    
+    for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
+    {
+        if((*it)->type == TRITYPE::T)
+        {
+            Triangle* terminalTriangle = *it;
+            Triangle* nextTriangle = NULL;
+            
+            // search the terminal triangle edges
+            for(int i=0; i<3; i++)
+            {
+                if(terminalTriangle->edge[i]->type == EDGETYPE::Internal)
+                {
+                    if(terminalTriangle->edge[i]->e1->tR != terminalTriangle)
+                        nextTriangle = terminalTriangle->edge[i]->e1->tR;
+                    else if(terminalTriangle->edge[i]->e1->tL != terminalTriangle)
+                        nextTriangle = terminalTriangle->edge[i]->e1->tL;
+                    
+                    
+                    if(nextTriangle->type == TRITYPE::S)
+                    {
+                        removeTerminalTriangles.push_back(terminalTriangle);
+                    }
+                }
+            }
+        }
+    }
+    
+    // remove terminal triangle connect with sleeve triangle
+    for(uint i=0; i<removeTerminalTriangles.size(); i++)
+    {
+        Triangle* terminalTriangle = removeTerminalTriangles[i];
+        Triangle* sleeveTriangle = NULL;
+        Edge* connectEdge = NULL;
+        
+        // search the terminal triangle connect with joint triangle
+        for(int j=0; j<3; j++)
+        {
+            if(terminalTriangle->edge[j]->type == EDGETYPE::Internal)
+            {
+                if(terminalTriangle->edge[j]->e1->tR != terminalTriangle)
+                    sleeveTriangle = terminalTriangle->edge[j]->e1->tR;
+                else if(terminalTriangle->edge[j]->e1->tL != terminalTriangle)
+                    sleeveTriangle = terminalTriangle->edge[j]->e1->tL;
+                
+                connectEdge = terminalTriangle->edge[j];
+            }
+            else
+            {
+                terminalTriangle->edge[j]->unLink();
+            }
+        }
+        
+        connectEdge->setType(EDGETYPE::External);
+    }
+    
     return;
 }
 

@@ -157,7 +157,8 @@ public:
     void addP2tTriangles(std::vector<p2t::Triangle*> triangles);
     std::vector<Point*> getSkeletonPointSet(PointSet &ps);
     void findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle, Triangle* prevJointTriangle, int prevMergeType);
-    void removeTerminalTriangle(PointSet &ps);
+    void removeTerminalTriangleWithJoint(PointSet &ps);
+    void removeTerminalTriangleWithSleeve(PointSet &ps);
     
     
     

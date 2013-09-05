@@ -399,21 +399,27 @@ int main( void )
                 
                 mesh.loadP2tPoints(polyline);
                 findSkeletonMesh.loadP2tPoints(polyline);
-                cout << "mesh vertex num : " << mesh.ps->pSet.size() << endl;
+                
                 mesh.addP2tTriangles(triangles);
                 findSkeletonMesh.addP2tTriangles(triangles);
+                cout << "mesh vertex num : " << mesh.ps->pSet.size() << endl;
                 
                 
                 
                 vector<Point*> spineEdgeSet;
                 vector<Point*> jointPointSet;
-                findSkeletonMesh.removeTerminalTriangle(*findSkeletonMesh.ps);
+                
+                findSkeletonMesh.removeTerminalTriangleWithSleeve(*findSkeletonMesh.ps);
+                findSkeletonMesh.removeTerminalTriangleWithJoint(*findSkeletonMesh.ps);
+                
+
                 spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*findSkeletonMesh.ps);
                 // jointPointSet = spineEdgeSet;
                 
                 cout << "spineEdge size: " << spineEdgeSet.size() / 2 << endl;
                 // get spine points
                 // mesh.getSpinePoints(*mesh.ps);
+                // findSkeletonMesh.getSpinePoints(*findSkeletonMesh.ps);
                 
                 
                 // mesh.loadTriangleFromPointSet(*mesh.ps);
