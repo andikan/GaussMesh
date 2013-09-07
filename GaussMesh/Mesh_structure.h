@@ -66,6 +66,7 @@ public:
     NeighborLit nextNeighbor(NeighborLit it, int d);
     Point* findConvexHull(bool clockwise, const Point* pp);
     void calNormal();
+    bool isEqualTo(const Point* p2);
     
     float p[3];
     float n[3];
@@ -159,6 +160,9 @@ public:
     void findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle, Triangle* prevJointTriangle, int prevMergeType);
     void removeTerminalTriangleWithJoint(PointSet &ps);
     void removeTerminalTriangleWithSleeve(PointSet &ps);
+    std::vector<Point*> getJointPointEdgeSet(std::vector<Point*> &edgePoints);
+    void findNextJointPointEdge(std::vector<Point*> &jointPointEdgeSet, std::vector<Point*> &edgePoints, Point* currentPoint,
+                                Point* prevPoint, Point* prevJointPoint);
     
     
     
@@ -169,6 +173,9 @@ public:
     
     Mesh();
     ~Mesh();
+    
+private:
+    std::vector<Point*> getNeighborPoint(Point* targetPoint, std::vector<Point*> &edgePoints);
 };
 
 

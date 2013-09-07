@@ -221,3 +221,11 @@ void Point::calNormal()
 	for(int i = 0; i < 3; i++)
 		this->n[i] /= length;
 }
+
+bool Point::isEqualTo(const Point* p2)
+{
+    if(this->p[0] == p2->p[0] && this->p[1] == p2->p[1] && this->p[2] == p2->p[2])
+        return true;
+    else
+        return false;
+}

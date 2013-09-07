@@ -1550,3 +1550,103 @@ void Mesh::removeTerminalTriangleWithSleeve(PointSet &ps)
 }
 
 
+vector<Point*> Mesh::getJointPointEdgeSet(vector<Point*> &edgePoints)
+{
+    vector<Point*> jointPointEdgeSet;
+    bool existJointPoint = false;
+    
+    cout << "edgePoints : " << edgePoints.size() / 2 << endl;
+    for(int i=0; i<edgePoints.size(); i++)
+    {
+        vector<Point*> neighborPoints;
+        neighborPoints = getNeighborPoint(edgePoints[i], edgePoints);
+        if(neighborPoints.size() > 2)
+        {
+            for(int j=0; j<neighborPoints.size(); j++)
+            {
+                findNextJointPointEdge(jointPointEdgeSet, edgePoints, neighborPoints[j], edgePoints[i], edgePoints[i]);
+            }
+            existJointPoint = true;
+            break;
+        }
+    }
+    
+    if(!existJointPoint)
+    {
+        for(int i=0; i<edgePoints.size(); i++)
+        {
+            vector<Point*> neighborPoints = getNeighborPoint(edgePoints[i], edgePoints);
+            if(neighborPoints.size() == 1)
+            {
+                findNextJointPointEdge(jointPointEdgeSet, edgePoints, neighborPoints[0], edgePoints[i], edgePoints[i]);
+                break;
+            }
+        }
+    }
+    
+    return jointPointEdgeSet;
+}
+
+
+void Mesh::findNextJointPointEdge(vector<Point*> &jointPointEdgeSet, vector<Point*> &edgePoints,
+                                  Point* currentPoint, Point* prevPoint, Point* prevJointPoint)
+{
+    vector<Point*> neighborPoints;
+    neighborPoints = getNeighborPoint(currentPoint, edgePoints);
+    
+    if(neighborPoints.size() > 2)
+    {
+        jointPointEdgeSet.push_back(prevJointPoint);
+        jointPointEdgeSet.push_back(currentPoint);
+        
+        for(int i=0; i<neighborPoints.size(); i++)
+        {
+            if(!neighborPoints[i]->isEqualTo(prevPoint))
+            {
+                findNextJointPointEdge(jointPointEdgeSet, edgePoints, neighborPoints[i], currentPoint, currentPoint);
+            }
+        }
+        
+        return;
+    }
+    else if(neighborPoints.size() == 2)
+    {
+        for(int i=0; i<neighborPoints.size(); i++)
+        {
+            if(!neighborPoints[i]->isEqualTo(prevPoint))
+            {
+                findNextJointPointEdge(jointPointEdgeSet, edgePoints, neighborPoints[i], currentPoint, prevJointPoint);
+            }
+        }
+        return;
+        
+    }
+    else if(neighborPoints.size() == 1)
+    {
+        jointPointEdgeSet.push_back(prevJointPoint);
+        jointPointEdgeSet.push_back(currentPoint);
+        
+        return;
+    }
+}
+
+vector<Point*> Mesh::getNeighborPoint(Point* targetPoint, std::vector<Point*> &edgePoints)
+{
+    vector<Point*> neighborPoints;
+    for(int i=0; i<edgePoints.size(); i++)
+    {
+        if(edgePoints[i]->isEqualTo(targetPoint))
+        {
+            bool existSamePoint = false;
+            for(int j=0; j<neighborPoints.size(); j++)
+            {
+                if(neighborPoints[j]->isEqualTo(edgePoints[(i+1)-2*(i%2)]))
+                    existSamePoint = true;
+            }
+            if(!existSamePoint)
+                neighborPoints.push_back(edgePoints[(i+1)-2*(i%2)]);
+        }
+    }
+    return neighborPoints;
+}
+
