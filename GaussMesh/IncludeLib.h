@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
+#include <math.h>       /* sqrt */
 using namespace std;
 
 

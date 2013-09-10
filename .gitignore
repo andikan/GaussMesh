@@ -1,0 +1,7 @@
+# Mac OS X
+*.DS_Store
+
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+GaussMesh.xcodeproj/project.xcworkspace/

@@ -97,6 +97,44 @@ void Mesh::loadEdgeFromPointSet(const PointSet& ps)
     this->drawMode = GL_LINES;
 }
 
+void Mesh::loadContourEdgeFromPointSet(const PointSet& ps)
+{
+    this->release();
+    list<Edge*> edgeList;
+	list<Point*>::const_iterator pit;
+	NeighborLit nit;
+	for(pit = ps.pSet.begin(); pit != ps.pSet.end(); pit++)
+	{
+		for(nit = (*pit)->neighbor.begin(); nit != (*pit)->neighbor.end(); nit++)
+			edgeList.push_back(nit->e);
+	}
+	edgeList.unique();
+	// Allocate buffer for each vertex of trangle: pos, color, normal(3*3*3 floats)
+	this->release();
+	this->pNum = (int)edgeList.size() * 2;
+	this->vertexBuffer = new float[this->pNum*3];
+	// Load data into buffer in the form of "pos, color, normal, pos, color, normal, ..."
+	int vbp = 0;
+	list<Edge*>::iterator eit;
+	for(eit = edgeList.begin(); eit != edgeList.end(); eit++)
+	{
+        if((*eit)->type == EDGETYPE::External)
+        {
+            // Point1
+            for(int i = 0; i < 3; i++)
+            {
+                this->vertexBuffer[vbp++] = (*eit)->p1->p[i];
+            }
+            // Point2
+            for(int i = 0; i < 3; i++)
+            {
+                this->vertexBuffer[vbp++] = (*eit)->p2->p[i];
+            }
+        }
+	}
+    this->drawMode = GL_LINES;
+}
+
 void Mesh::loadTriangleFromPointSet(const PointSet& ps)
 {
 	// Allocate buffer for each vertex of trangle: pos, color, normal(3*3*3 floats)
@@ -1648,5 +1686,170 @@ vector<Point*> Mesh::getNeighborPoint(Point* targetPoint, std::vector<Point*> &e
         }
     }
     return neighborPoints;
+}
+
+vector<Point*> Mesh::getChordalAxisPointSet(PointSet &ps)
+{
+    vector<Point*> skeletonPoints;
+    list<Triangle*>::const_iterator it;
+    Triangle* prevJointTriangle = NULL;
+    Triangle* currentTriangle = NULL;
+    skeletonPoints.clear();
+    bool existJointTriangle = false;
+    
+    
+    for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
+	{
+        if((*it)->type == TRITYPE::J)
+        {
+            prevJointTriangle = *it;
+            currentTriangle = *it;
+            findNextChordalAxisPoint(skeletonPoints, currentTriangle, currentTriangle);
+            existJointTriangle = true;
+            break;
+        }
+    }
+    
+    // if there is no joint triangle
+//    if(!existJointTriangle)
+//    {
+//        for(it = ps.triSet.begin(); it != ps.triSet.end(); it++)
+//        {
+//            if((*it)->type == TRITYPE::T)
+//            {
+//                Triangle* nextTriangle = NULL;
+//                currentTriangle = *it;
+//                for(int i=0; i<3; i++)
+//                {
+//                    if(currentTriangle->edge[i]->type == EDGETYPE::Internal)
+//                    {
+//                        if(currentTriangle->edge[i]->e1->tR != currentTriangle)
+//                            nextTriangle = currentTriangle->edge[i]->e1->tR;
+//                        else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
+//                            nextTriangle = currentTriangle->edge[i]->e1->tL;
+//                        
+//                        findNextUnMergeSkeletonPoint(skeletonPoints, nextTriangle, currentTriangle);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//    }
+    
+    return skeletonPoints;
+}
+
+void Mesh::findNextChordalAxisPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle)
+{
+    /* First triangle : JOINT triangle */
+    if(currentTriangle == prevTriangle && currentTriangle->type == TRITYPE::J)    // first triangle
+    {
+        for(int i=0; i<3; i++)
+        {
+            Triangle* nextTriangle = NULL;
+            if(currentTriangle->edge[i]->e1->tR != currentTriangle)
+                nextTriangle = currentTriangle->edge[i]->e1->tR;
+            else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
+                nextTriangle = currentTriangle->edge[i]->e1->tL;
+            
+            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+            skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+            
+            
+            findNextChordalAxisPoint(skeletonPoints, nextTriangle, currentTriangle);
+        }
+        return;
+    }
+    /* Next triangle : JOINT triangle */
+    else if(currentTriangle != prevTriangle && currentTriangle->type == TRITYPE::J)
+    {
+        Edge* prevEdge;
+        // find prev edge
+        for(int i=0; i<3; i++)
+        {
+            for(int j=0; j<3; j++)
+            {
+                if(prevTriangle->edge[i] == currentTriangle->edge[j])
+                    prevEdge = currentTriangle->edge[j];
+            }
+        }
+        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+        skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+        
+        
+        for(int i=0; i<3; i++)
+        {
+            if(currentTriangle->edge[i] != prevEdge)
+            {
+                Triangle* nextTriangle = NULL;
+                if(currentTriangle->edge[i]->e1->tR != currentTriangle)
+                    nextTriangle = currentTriangle->edge[i]->e1->tR;
+                else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
+                    nextTriangle = currentTriangle->edge[i]->e1->tL;
+                
+                skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, currentTriangle->midPoint[0], currentTriangle->midPoint[1], currentTriangle->midPoint[2]));
+                skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+                
+                findNextChordalAxisPoint(skeletonPoints, nextTriangle, currentTriangle);
+            }
+        }
+        return;
+    }
+    /* Next triangle : SLEEVE triangle */
+    else if(currentTriangle->type == TRITYPE::S)
+    {
+        Edge* prevEdge;
+        // find prev edge
+        for(int i=0; i<3; i++)
+        {
+            for(int j=0; j<3; j++)
+            {
+                if(prevTriangle->edge[i] == currentTriangle->edge[j])
+                    prevEdge = currentTriangle->edge[j];
+            }
+        }
+        
+        for(int i=0; i<3; i++)
+        {
+            if(currentTriangle->edge[i] != prevEdge && currentTriangle->edge[i]->type == EDGETYPE::Internal)
+            {
+                Triangle* nextTriangle = NULL;
+                if(currentTriangle->edge[i]->e1->tR != currentTriangle)
+                    nextTriangle = currentTriangle->edge[i]->e1->tR;
+                else if(currentTriangle->edge[i]->e1->tL != currentTriangle)
+                    nextTriangle = currentTriangle->edge[i]->e1->tL;
+                
+                skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (prevEdge->p1->p[0]+prevEdge->p2->p[0])/2 , (prevEdge->p1->p[1]+prevEdge->p2->p[1])/2, (prevEdge->p1->p[2]+prevEdge->p2->p[2])/2));
+                skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+                
+                findNextChordalAxisPoint(skeletonPoints, nextTriangle, currentTriangle);
+            }
+        }
+        return;
+    }
+    /* Next triangle : TERMINAL triangle */
+    else if(currentTriangle->type == TRITYPE::T)
+    {
+        for(int i=0; i<3; i++)
+        {
+            if(currentTriangle->edge[i]->type == EDGETYPE::Internal)
+            {
+                skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, (currentTriangle->edge[i]->p1->p[0]+currentTriangle->edge[i]->p2->p[0])/2 , (currentTriangle->edge[i]->p1->p[1]+currentTriangle->edge[i]->p2->p[1])/2, (currentTriangle->edge[i]->p1->p[2]+currentTriangle->edge[i]->p2->p[2])/2));
+                
+                Edge* otherEdge = currentTriangle->edge[(i+1)%3];
+                if((!otherEdge->p1->isEqualTo(currentTriangle->edge[i]->p1)) && (!otherEdge->p1->isEqualTo(currentTriangle->edge[i]->p2)))
+                {
+                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, otherEdge->p1->p[0] , otherEdge->p1->p[1], otherEdge->p1->p[2]));
+                }
+                else if((!otherEdge->p2->isEqualTo(currentTriangle->edge[i]->p1)) && (!otherEdge->p2->isEqualTo(currentTriangle->edge[i]->p2)))
+                {
+                    skeletonPoints.push_back(new Point((int)skeletonPoints.size()+1, otherEdge->p2->p[0] , otherEdge->p2->p[1], otherEdge->p2->p[2]));
+                }
+            }
+        }
+                
+        return;
+    }
+
 }
 

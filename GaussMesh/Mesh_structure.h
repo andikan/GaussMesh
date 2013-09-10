@@ -156,10 +156,20 @@ public:
     
     void loadP2tPoints(std::vector<p2t::Point*> polyline);
     void addP2tTriangles(std::vector<p2t::Triangle*> triangles);
+    
+    // get skeleton point set
     std::vector<Point*> getSkeletonPointSet(PointSet &ps);
     void findNextSkeletonPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle, Triangle* prevJointTriangle, int prevMergeType);
+    
+    // get unmerge skeleton point set
+    std::vector<Point*> getChordalAxisPointSet(PointSet &ps);
+    void findNextChordalAxisPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle);
+    
+    
     void removeTerminalTriangleWithJoint(PointSet &ps);
     void removeTerminalTriangleWithSleeve(PointSet &ps);
+    
+    // get joint point edges set
     std::vector<Point*> getJointPointEdgeSet(std::vector<Point*> &edgePoints);
     void findNextJointPointEdge(std::vector<Point*> &jointPointEdgeSet, std::vector<Point*> &edgePoints, Point* currentPoint,
                                 Point* prevPoint, Point* prevJointPoint);
@@ -168,6 +178,7 @@ public:
     
     void loadTriangleFromPointSet(const PointSet& ps);
     void loadEdgeFromPointSet(const PointSet& ps);
+    void loadContourEdgeFromPointSet(const PointSet& ps);
     void runCDT();
     void release();
     

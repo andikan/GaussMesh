@@ -61,7 +61,7 @@ vector<Point*> ContourReader::getContourPoints()
                     ypos = atof(tmp);
                     // cout << "i : " << i+1 << ", x : " << xpos << ", y : " << ypos << endl;
                     
-                    Point* point = new Point(i+1, -(xpos-192), -(ypos-192), 0.0);
+                    Point* point = new Point(i+1, -(xpos-202), -(ypos-182), 0.0);
                     contourPoints.push_back(point);
                 }
             }
