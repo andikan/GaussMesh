@@ -673,6 +673,8 @@ int main( void )
                 // edge 2 = vectorPoints[2], vectorPoints[3]
                 // edge 3 = ....
                 spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*findSkeletonMesh.ps);
+                spineEdgeSet = findSkeletonMesh.removeRedundantTerminalEdges(spineEdgeSet);
+                // findSkeletonMesh.getPipeHole(contourpoints, spineEdgeSet);
                 // jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
                 /* END find skeleton END */
                 
@@ -1049,7 +1051,10 @@ int main( void )
                 // edge 2 = vectorPoints[2], vectorPoints[3]
                 // edge 3 = ....
                 spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*findSkeletonMesh.ps);
-                jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
+                // spineEdgeSet = findSkeletonMesh.removeRedundantTerminalEdges(spineEdgeSet);
+                
+                // jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
+                jointPointEdgeSet = findSkeletonMesh.getSimplifiedPointEdgeSet(spineEdgeSet);
                 /* END find skeleton END */
                 
                 mesh.loadEdgeFromPointSet(*mesh.ps);
@@ -1138,6 +1143,183 @@ int main( void )
                 readContourDataCount++;
             }
 
+        }
+        
+        if (glfwGetKey( GLFW_KEY_RSHIFT ) == GLFW_PRESS)
+        {
+            if(readContourData)
+            {
+                readContourDataCount++;
+                if(readContourDataCount%9 == 0)
+                {
+                    readContourData = false;
+                }
+            }
+            
+            if(!readContourData)
+            {
+                vector<Point*> contourpoints;
+                
+                /* p2t data */
+                /// Constrained triangles
+                vector<p2t::Triangle*> triangles;
+                /// Triangle map (include edge outside the contour)
+                list<p2t::Triangle*> map;
+                /// Polylines (if there are holes in the polygon)
+                // vector< vector<p2t::Point*> > polylines;
+                /// Polyline
+                vector<p2t::Point*> polyline;
+                
+                
+                
+                string filenum_str = to_string(filenum);
+                string filename ="/Users/andikan/Dev/gauss/GaussMesh/GaussMesh/data/";
+                filename.append(filenum_str);
+                filename.append(".txt");
+                
+                cout << "Start processing " << filenum_str << ".txt" << endl;
+                
+                ContourReader reader(filename);
+                contourpoints = reader.getContourPoints();
+                
+                clickPoint.clear();
+                vertices.clear();
+                colors.clear();
+                
+                for(int i=0; i<contourpoints.size(); i++)
+                {
+                    polyline.push_back(new p2t::Point(contourpoints[i]->p[0], contourpoints[i]->p[1]));
+                }
+                
+                /*
+                 * STEP 1: Create CDT and add primary polyline
+                 * NOTE: polyline must be a simple polygon. The polyline's points
+                 * constitute constrained edges. No repeat points!!!
+                 */
+                clock_t init_time = clock();
+                p2t::CDT* cdt = new p2t::CDT(polyline);
+                cdt->Triangulate();
+                triangles = cdt->GetTriangles();
+                clock_t end_time = clock();
+                cout << "Elapsed time (sec) = " << (end_time-init_time)/(double)(CLOCKS_PER_SEC) << " sec" << endl;
+                map = cdt->GetMap();
+                
+                
+                mesh.loadP2tPoints(polyline);
+                findSkeletonMesh.loadP2tPoints(polyline);
+                
+                mesh.addP2tTriangles(triangles);
+                findSkeletonMesh.addP2tTriangles(triangles);
+                cout << "mesh vertex num : " << mesh.ps->pSet.size() << endl;
+                
+                
+                /* find skeleton */
+                vector<Point*> spineEdgeSet;
+                vector<Point*> jointPointEdgeSet;
+                // remove some T triangle, like T-J, T-S
+                findSkeletonMesh.removeTerminalTriangleWithJoint(*findSkeletonMesh.ps);
+                // findSkeletonMesh.removeTerminalTriangleWithSleeve(*findSkeletonMesh.ps);
+                // get edge of points, return vector<Point*>
+                // edge 1 = vectorPoints[0], vectorPoints[1]
+                // edge 2 = vectorPoints[2], vectorPoints[3]
+                // edge 3 = ....
+                spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*findSkeletonMesh.ps);
+                // spineEdgeSet = findSkeletonMesh.removeRedundantTerminalEdges(spineEdgeSet);
+                
+                // jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
+                // jointPointEdgeSet = findSkeletonMesh.removeSmallRedundantTerminalEdges(jointPointEdgeSet);
+                
+                
+                jointPointEdgeSet = findSkeletonMesh.getSimplifiedPointEdgeSet(spineEdgeSet);
+                jointPointEdgeSet = findSkeletonMesh.removeSmallRedundantTerminalEdges(jointPointEdgeSet);
+                /* END find skeleton END */
+                
+                mesh.loadEdgeFromPointSet(*mesh.ps);
+                glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+                
+                
+                vertices.clear();
+                colors.clear();
+                spineVertice.clear();
+                spineColors.clear();
+                jointVertice.clear();
+                jointColors.clear();
+                
+                for (int i = 0; i < jointPointEdgeSet.size()/2; i++) {
+                    Point* p1 = jointPointEdgeSet[2*i];
+                    Point* p2 = jointPointEdgeSet[2*i+1];
+                    
+                    double dx = p2->p[0]-p1->p[0];
+                    double dy = p2->p[1]-p1->p[1];
+                    double width = 12.0;
+                    double height = 6.0;
+                    glm::vec2 lineVec = vec2(dx*height/sqrt(dx*dx+dy*dy) , dy*height/sqrt(dx*dx+dy*dy));
+                    
+                    glm::vec2 verticalLineVec = vec2(-dy*width/sqrt(dx*dx+dy*dy) , dx*width/sqrt(dx*dx+dy*dy));
+                    
+                    Point* p1_r = new Point(1, p1->p[0]+(-lineVec.x)+(verticalLineVec.x), p1->p[1]+(-lineVec.y)+(verticalLineVec.y), 0);
+                    Point* p1_l = new Point(1, p1->p[0]+(-lineVec.x)+(-verticalLineVec.x), p1->p[1]+(-lineVec.y)+(-verticalLineVec.y), 0);
+                    Point* p2_r = new Point(1, p2->p[0]+(lineVec.x)+(verticalLineVec.x), p2->p[1]+(lineVec.y)+(verticalLineVec.y), 0);
+                    Point* p2_l = new Point(1, p2->p[0]+(lineVec.x)+(-verticalLineVec.x), p2->p[1]+(lineVec.y)+(-verticalLineVec.y), 0);
+                    
+                    vertices.push_back(vec3(p1_r->p[0], p1_r->p[1], p1_r->p[2]));
+                    vertices.push_back(vec3(p1_l->p[0], p1_l->p[1], p1_l->p[2]));
+                    
+                    vertices.push_back(vec3(p2_r->p[0], p2_r->p[1], p2_r->p[2]));
+                    vertices.push_back(vec3(p2_l->p[0], p2_l->p[1], p2_l->p[2]));
+                    
+                    vertices.push_back(vec3(p1_r->p[0], p1_r->p[1], p1_r->p[2]));
+                    vertices.push_back(vec3(p2_r->p[0], p2_r->p[1], p2_r->p[2]));
+                    
+                    vertices.push_back(vec3(p1_l->p[0], p1_l->p[1], p1_l->p[2]));
+                    vertices.push_back(vec3(p2_l->p[0], p2_l->p[1], p2_l->p[2]));
+                    
+                    for(int num=0; num < 6; num++)
+                    {
+                        colors.push_back(vec3(0.17f, 0.24f, 0.31f));
+                    }
+                }
+                
+                
+                //                for (int i = 0; i < spineEdgeSet.size(); i++)
+                //                {
+                //                    spineVertice.push_back(vec3(spineEdgeSet[i]->p[0], spineEdgeSet[i]->p[1], spineEdgeSet[i]->p[2]));
+                //                    spineColors.push_back(vec3(0, 0, 255));
+                //                }
+                //
+                for (int i = 0; i < jointPointEdgeSet.size(); i++) {
+                    jointVertice.push_back(vec3(jointPointEdgeSet[i]->p[0], jointPointEdgeSet[i]->p[1], jointPointEdgeSet[i]->p[2]));
+                    jointColors.push_back(vec3(0.086f, 0.627f, 0.521f));
+                }
+                
+                glBindBuffer(GL_ARRAY_BUFFER, spineVertexBuffer);
+                glBufferData(GL_ARRAY_BUFFER, spineVertice.size() * sizeof(vec3), &spineVertice[0], GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, spineColorBuffer);
+                glBufferData(GL_ARRAY_BUFFER, spineColors.size() * sizeof(vec3), &spineColors[0], GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, jointVertexBuffer);
+                glBufferData(GL_ARRAY_BUFFER, jointVertice.size() * sizeof(vec3), &jointVertice[0], GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, jointColorBuffer);
+                glBufferData(GL_ARRAY_BUFFER, jointColors.size() * sizeof(vec3), &jointColors[0], GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+                glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+                
+                glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+                glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(vec3), &colors[0], GL_STATIC_DRAW);
+                
+                // drawMode = GL_LINES;
+                drawMode = GL_LINES;
+                // drawMode = GL_QUADS;
+                lineWidth = thinLine;
+                // drawMode = findSkeletonMesh.drawMode;
+                
+                readContourData = true;
+                readContourDataCount++;
+            }
+            
         }
         
         if (glfwGetKey( GLFW_KEY_ENTER ) == GLFW_PRESS)

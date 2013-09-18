@@ -174,6 +174,21 @@ public:
     void findNextJointPointEdge(std::vector<Point*> &jointPointEdgeSet, std::vector<Point*> &edgePoints, Point* currentPoint,
                                 Point* prevPoint, Point* prevJointPoint);
     
+    // get new joint point edges set
+    std::vector<Point*> getSimplifiedPointEdgeSet(std::vector<Point*> &edgePoints);
+    void findNextSimplifiedPointEdge(std::vector<Point*> &simplePointEdgeSet, std::vector<Point*> &edgePoints, Point* currentPoint,
+                                     Point* prevPoint, Point* prevJointPoint, std::vector<Point*> &tempPoints);
+
+    
+    // remove redundant terminal edges
+    std::vector<Point*> removeRedundantTerminalEdges(std::vector<Point*> &spineEdgePoints);
+    int getPointIndex(Point* targetPoint, int prevPointIndex, std::vector<Point*> &edgePoints);
+    
+    std::vector<Point*> removeSmallRedundantTerminalEdges(std::vector<Point*> &spineEdgePoints);
+    
+    // get pipe hole
+    std::vector<int> getPipeHole(std::vector<Point*> &contourPoints, std::vector<Point*> &spineEdgePoints);
+    
     
     
     void loadTriangleFromPointSet(const PointSet& ps);
@@ -187,6 +202,7 @@ public:
     
 private:
     std::vector<Point*> getNeighborPoint(Point* targetPoint, std::vector<Point*> &edgePoints);
+    
 };
 
 

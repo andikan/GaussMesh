@@ -476,7 +476,9 @@ void Mesh::loadP2tPoints(vector<p2t::Point*> polyline)
 
 void Mesh::addP2tTriangles(vector<p2t::Triangle*> triangles)
 {
-    Edge* edgesArray[triangles.size()][3];
+    // Edge* edgesArray[triangles.size()][3];
+    vector<Edge*> edgesVec;
+    
     
     for(uint i=0; i<triangles.size(); i++)
     {
@@ -558,7 +560,11 @@ void Mesh::addP2tTriangles(vector<p2t::Triangle*> triangles)
                 // link 
                 Edge* edge = new Edge(p1, p2);
                 edge->beLink();
-                edgesArray[i][j] = edge;
+                p2t::Triangle tempTriangle = *triangles[i];
+                if(t.constrained_edge[j]){
+                    edgesVec.push_back(edge);
+                }
+                // edgesArray[i][j] = edge;
                 
                 
                 // Check the triangle candidate list
@@ -591,15 +597,19 @@ void Mesh::addP2tTriangles(vector<p2t::Triangle*> triangles)
     
     
     // setting the externel edges
-    for(uint i=0; i<triangles.size(); i++)
+//    for(uint i=0; i<triangles.size(); i++)
+//    {
+//        p2t::Triangle t = *triangles[i];
+//        for(int j=0; j<3; j++)
+//        {
+//            if(t.constrained_edge[j]){
+//                edgesArray[i][j]->setType(External);
+//            }
+//        }
+//    }
+    for(uint i=0; i<edgesVec.size(); i++)
     {
-        p2t::Triangle t = *triangles[i];
-        for(int j=0; j<3; j++)
-        {
-            if(t.constrained_edge[j]){
-                edgesArray[i][j]->setType(External);
-            }
-        }
+        edgesVec[i]->setType(External);
     }
 }
 
@@ -1851,5 +1861,378 @@ void Mesh::findNextChordalAxisPoint(std::vector<Point*> &skeletonPoints, Triangl
         return;
     }
 
+}
+
+vector<Point*> Mesh::removeRedundantTerminalEdges(vector<Point*> &spineEdgePoints)
+{
+    int removeEdgeDistance = 3;
+    bool existJointPoint = false;
+    for(int i=0; i<spineEdgePoints.size(); i++)
+    {
+        vector<Point*> neighborPoints;
+        neighborPoints = getNeighborPoint(spineEdgePoints[i], spineEdgePoints);
+        if(neighborPoints.size() > 2)
+        {
+            existJointPoint = true;
+            break;
+        }
+    }
+    
+    vector<vector<int>> removePointIndexVecVec;
+    if(existJointPoint)
+    {
+        for(int i=0; i<spineEdgePoints.size(); i++)
+        {
+            vector<Point*> neighborPoints;
+            vector<Point*> nextPointNeighborPoints;
+            vector<int> removePointIndexVec;
+            neighborPoints = getNeighborPoint(spineEdgePoints[i], spineEdgePoints);
+            if(neighborPoints.size() == 1) // find terminal edge
+            {
+                int nextIndex = (i+1)-2*(i%2);
+                removePointIndexVec.push_back(i);
+                removePointIndexVec.push_back(nextIndex);
+                Point* nextPoint = spineEdgePoints[nextIndex];
+                nextPointNeighborPoints = getNeighborPoint(nextPoint, spineEdgePoints);
+                
+                while(nextPointNeighborPoints.size() == 2)
+                {
+                    int currentIndex = getPointIndex(nextPoint, nextIndex, spineEdgePoints);
+                    nextIndex = (currentIndex+1)-2*(currentIndex%2);
+                    removePointIndexVec.push_back(currentIndex);
+                    removePointIndexVec.push_back(nextIndex);
+                    nextPoint = spineEdgePoints[nextIndex];
+                    nextPointNeighborPoints = getNeighborPoint(nextPoint, spineEdgePoints);
+                }
+                
+                if(removePointIndexVec.size()/2 < removeEdgeDistance)
+                {
+                    removePointIndexVecVec.push_back(removePointIndexVec);
+                }
+            }
+        }
+        
+        // clear point to null
+        for(int i=0; i<removePointIndexVecVec.size(); i++)
+        {
+            for(int j=0; j<removePointIndexVecVec[i].size(); j++)
+            {
+                spineEdgePoints[removePointIndexVecVec[i][j]] = NULL;
+            }
+        }
+        
+        // remove null points
+        int nullIndex = -1;
+        for(int i=0; i<spineEdgePoints.size(); i++)
+        {
+            if(spineEdgePoints[i] == NULL)
+                nullIndex = i;
+        }
+        while(nullIndex >= 0)
+        {
+            spineEdgePoints.erase(spineEdgePoints.begin()+nullIndex);
+            nullIndex = -1;
+            for(int i=0; i<spineEdgePoints.size(); i++)
+            {
+                if(spineEdgePoints[i] == NULL)
+                    nullIndex = i;
+            }
+        }
+        
+    }
+    return spineEdgePoints;
+}
+
+
+
+
+
+vector<int> Mesh::getPipeHole(vector<Point*> &contourPoints, vector<Point*> &spineEdgePoints)
+{
+    PointSet* ps = this->ps;
+    vector<int> pipeHoleIndexVec;
+    cout << "contour size : " << contourPoints.size() / 2 << endl;
+    
+    for(int i=0; i<spineEdgePoints.size(); i++)
+    {
+        vector<Point*> neighborPoints;
+        neighborPoints = getNeighborPoint(spineEdgePoints[i], spineEdgePoints);
+        if(neighborPoints.size() == 1)
+        {
+            Point* terminalPoint = spineEdgePoints[i];
+            Point* terminalSecondPoint = spineEdgePoints[(i+1)-2*(i%2)];
+            
+            list<Triangle*>::const_iterator it;
+            bool findVerticalEdge = false;
+            Edge* cuttingEdge;
+            
+            
+            // find the cutting edge
+            for(it = ps->triSet.begin(); it != ps->triSet.end(); it++)
+            {
+                Triangle* currentTriangle = (*it);
+                for(int j=0; j<3; j++)
+                {
+                    if(((currentTriangle->edge[j]->p1->p[0]+currentTriangle->edge[j]->p2->p[0])/2 == terminalPoint->p[0]) &&
+                       ((currentTriangle->edge[j]->p1->p[1]+currentTriangle->edge[j]->p2->p[1])/2 == terminalPoint->p[1]))
+                    {
+                        cuttingEdge = currentTriangle->edge[j];
+                        findVerticalEdge = true;
+                        break;
+                    }
+                }
+            }
+            
+            if(!findVerticalEdge)
+            {
+                for(it = ps->triSet.begin(); it != ps->triSet.end(); it++)
+                {
+                    Triangle* currentTriangle = (*it);
+                    for(int j=0; j<3; j++)
+                    {
+                        if(((currentTriangle->edge[j]->p1->p[0]+currentTriangle->edge[j]->p2->p[0])/2 == terminalSecondPoint->p[0]) &&
+                           ((currentTriangle->edge[j]->p1->p[1]+currentTriangle->edge[j]->p2->p[1])/2 == terminalSecondPoint->p[1]))
+                        {
+                            cuttingEdge = currentTriangle->edge[j];
+                            findVerticalEdge = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            // END find the cutting edge
+            
+            int edgePointIndex[2];
+            for(int k=0; k<contourPoints.size(); k++)
+            {
+                if(contourPoints[k]->isEqualTo(cuttingEdge->p1))
+                    edgePointIndex[0] = k;
+                else if(contourPoints[k]->isEqualTo(cuttingEdge->p2))
+                    edgePointIndex[1] = k;
+            }
+            
+            if(edgePointIndex[0] > edgePointIndex[1])
+            {
+                int temp = edgePointIndex[0];
+                edgePointIndex[0] = edgePointIndex[1];
+                edgePointIndex[1] = temp;
+            }
+            
+            if( (edgePointIndex[1]-edgePointIndex[0]) > (contourPoints.size()/2) )
+            {
+                int temp = edgePointIndex[0];
+                edgePointIndex[0] = edgePointIndex[1];
+                edgePointIndex[1] = temp;
+            }
+            
+            pipeHoleIndexVec.push_back(edgePointIndex[0]);
+            pipeHoleIndexVec.push_back(edgePointIndex[1]);
+        }
+    }
+    
+    return pipeHoleIndexVec;
+}
+
+int Mesh::getPointIndex(Point* targetPoint, int prevPointIndex, std::vector<Point*> &edgePoints)
+{
+    int returnIndex = 0;
+    for(int i=0; i<edgePoints.size(); i++)
+    {
+        if(edgePoints[i]->isEqualTo(targetPoint))
+        {
+            if(prevPointIndex != i)
+            {
+                returnIndex = i;
+                break;
+            }
+        }
+    }
+    return returnIndex;
+}
+
+vector<Point*> Mesh::removeSmallRedundantTerminalEdges(vector<Point*> &spineEdgePoints)
+{
+    double removeEdgeDistanceThreshold = 20.0;
+    bool existJointPoint = false;
+    for(int i=0; i<spineEdgePoints.size(); i++)
+    {
+        vector<Point*> neighborPoints;
+        neighborPoints = getNeighborPoint(spineEdgePoints[i], spineEdgePoints);
+        if(neighborPoints.size() > 2)
+        {
+            existJointPoint = true;
+            break;
+        }
+    }
+    
+    vector<vector<int>> removePointIndexVecVec;
+    if(existJointPoint)
+    {
+        for(int i=0; i<spineEdgePoints.size(); i++)
+        {
+            vector<Point*> neighborPoints;
+            vector<Point*> nextPointNeighborPoints;
+            vector<int> removePointIndexVec;
+            neighborPoints = getNeighborPoint(spineEdgePoints[i], spineEdgePoints);
+            if(neighborPoints.size() == 1) // find terminal edge
+            {
+                int nextIndex = (i+1)-2*(i%2);
+                removePointIndexVec.push_back(i);
+                removePointIndexVec.push_back(nextIndex);
+                Point* currentPoint = spineEdgePoints[i];
+                Point* nextPoint = spineEdgePoints[nextIndex];
+                
+                
+                double dx = currentPoint->p[0] - nextPoint->p[0];
+                double dy = currentPoint->p[1] - nextPoint->p[1];
+                double distance = sqrt(dx*dx+dy*dy);
+                cout << "distance : " << distance << endl;
+                
+                if(distance < removeEdgeDistanceThreshold)
+                {
+                    removePointIndexVecVec.push_back(removePointIndexVec);
+                }
+            }
+        }
+        
+        // clear point to null
+        for(int i=0; i<removePointIndexVecVec.size(); i++)
+        {
+            for(int j=0; j<removePointIndexVecVec[i].size(); j++)
+            {
+                spineEdgePoints[removePointIndexVecVec[i][j]] = NULL;
+            }
+        }
+
+        // remove null points
+        int nullIndex = -1;
+        for(int i=0; i<spineEdgePoints.size(); i++)
+        {
+            if(spineEdgePoints[i] == NULL)
+                nullIndex = i;
+        }
+        while(nullIndex >= 0)
+        {
+            spineEdgePoints.erase(spineEdgePoints.begin()+nullIndex);
+            nullIndex = -1;
+            for(int i=0; i<spineEdgePoints.size(); i++)
+            {
+                if(spineEdgePoints[i] == NULL)
+                    nullIndex = i;
+            }
+        }
+        
+    }
+    return spineEdgePoints;
+}
+
+vector<Point*> Mesh::getSimplifiedPointEdgeSet(vector<Point*> &edgePoints)
+{
+    vector<Point*> simplePointEdgeSet;
+    vector<Point*> tempPoints;
+    bool existJointPoint = false;
+    
+    cout << "edgePoints : " << edgePoints.size() / 2 << endl;
+    for(int i=0; i<edgePoints.size(); i++)
+    {
+        vector<Point*> neighborPoints;
+        neighborPoints = getNeighborPoint(edgePoints[i], edgePoints);
+        if(neighborPoints.size() > 2)
+        {
+            for(int j=0; j<neighborPoints.size(); j++)
+            {
+                findNextSimplifiedPointEdge(simplePointEdgeSet, edgePoints, neighborPoints[j], edgePoints[i], edgePoints[i], tempPoints);
+            }
+            existJointPoint = true;
+            break;
+        }
+    }
+    
+    if(!existJointPoint)
+    {
+        for(int i=0; i<edgePoints.size(); i++)
+        {
+            vector<Point*> neighborPoints = getNeighborPoint(edgePoints[i], edgePoints);
+            if(neighborPoints.size() == 1)
+            {
+                findNextSimplifiedPointEdge(simplePointEdgeSet, edgePoints, neighborPoints[0], edgePoints[i], edgePoints[i], tempPoints);
+                break;
+            }
+        }
+    }
+    
+    return simplePointEdgeSet;
+    
+}
+void Mesh::findNextSimplifiedPointEdge(std::vector<Point*> &simplePointEdgeSet, std::vector<Point*> &edgePoints, Point* currentPoint,
+                                 Point* prevPoint, Point* prevJointPoint, std::vector<Point*> &tempPoints)
+{
+    vector<Point*> neighborPoints;
+    neighborPoints = getNeighborPoint(currentPoint, edgePoints);
+    
+    // current is joint point
+    if(neighborPoints.size() > 2)
+    {
+        if(tempPoints.size() < 5)
+        {
+            simplePointEdgeSet.push_back(prevJointPoint);
+            simplePointEdgeSet.push_back(currentPoint);
+        }
+        else
+        {
+            
+            simplePointEdgeSet.push_back(prevJointPoint);
+            // simplePointEdgeSet.push_back(tempPoints[(tempPoints.size()/2)]);
+            // simplePointEdgeSet.push_back(tempPoints[(tempPoints.size()/2)]);
+            simplePointEdgeSet.push_back(currentPoint);
+        }
+        tempPoints.clear();
+    
+        for(int i=0; i<neighborPoints.size(); i++)
+        {
+            if(!neighborPoints[i]->isEqualTo(prevPoint))
+            {
+                findNextSimplifiedPointEdge(simplePointEdgeSet, edgePoints, neighborPoints[i], currentPoint, currentPoint, tempPoints);
+            }
+        }
+        
+        return;
+    }
+    // current is sleeve point
+    else if(neighborPoints.size() == 2)
+    {
+        tempPoints.push_back(currentPoint);
+        for(int i=0; i<neighborPoints.size(); i++)
+        {
+            if(!neighborPoints[i]->isEqualTo(prevPoint))
+            {
+                findNextSimplifiedPointEdge(simplePointEdgeSet, edgePoints, neighborPoints[i], currentPoint, prevJointPoint, tempPoints);
+            }
+        }
+        return;
+        
+    }
+    // current is terminal point
+    else if(neighborPoints.size() == 1)
+    {
+        if(tempPoints.size() < 5)
+        {
+            simplePointEdgeSet.push_back(prevJointPoint);
+            simplePointEdgeSet.push_back(currentPoint);
+        }
+        else
+        {
+            
+            simplePointEdgeSet.push_back(prevJointPoint);
+            simplePointEdgeSet.push_back(tempPoints[(tempPoints.size()/2)-1]);
+            simplePointEdgeSet.push_back(tempPoints[(tempPoints.size()/2)-1]);
+            simplePointEdgeSet.push_back(currentPoint);
+        }
+        tempPoints.clear();
+        
+        return;
+    }
+
+    
 }
 
