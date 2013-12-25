@@ -2086,7 +2086,7 @@ vector<Point*> Mesh::removeSmallRedundantTerminalEdges(vector<Point*> &spineEdge
                 double dx = currentPoint->p[0] - nextPoint->p[0];
                 double dy = currentPoint->p[1] - nextPoint->p[1];
                 double distance = sqrt(dx*dx+dy*dy);
-                cout << "distance : " << distance << endl;
+                // cout << "distance : " << distance << endl;
                 
                 if(distance < removeEdgeDistanceThreshold)
                 {
@@ -2215,7 +2215,7 @@ void Mesh::findNextSimplifiedPointEdge(std::vector<Point*> &simplePointEdgeSet, 
     // current is terminal point
     else if(neighborPoints.size() == 1)
     {
-        if(tempPoints.size() < 5)
+        if(tempPoints.size() < 8)
         {
             simplePointEdgeSet.push_back(prevJointPoint);
             simplePointEdgeSet.push_back(currentPoint);

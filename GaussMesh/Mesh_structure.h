@@ -165,8 +165,9 @@ public:
     std::vector<Point*> getChordalAxisPointSet(PointSet &ps);
     void findNextChordalAxisPoint(std::vector<Point*> &skeletonPoints, Triangle* currentTriangle, Triangle* prevTriangle);
     
-    
+    // 移除TJ中的T
     void removeTerminalTriangleWithJoint(PointSet &ps);
+    // 移除TS中的T
     void removeTerminalTriangleWithSleeve(PointSet &ps);
     
     // get joint point edges set
@@ -201,6 +202,8 @@ public:
     ~Mesh();
     
 private:
+    // 找出targetPoint在edgePoints中周圍的points
+    // 可能有 1 ~ n 個
     std::vector<Point*> getNeighborPoint(Point* targetPoint, std::vector<Point*> &edgePoints);
     
 };

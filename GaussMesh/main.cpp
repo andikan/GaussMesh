@@ -1053,8 +1053,8 @@ int main( void )
                 spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*findSkeletonMesh.ps);
                 // spineEdgeSet = findSkeletonMesh.removeRedundantTerminalEdges(spineEdgeSet);
                 
-                // jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
-                jointPointEdgeSet = findSkeletonMesh.getSimplifiedPointEdgeSet(spineEdgeSet);
+                jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
+                // jointPointEdgeSet = findSkeletonMesh.getSimplifiedPointEdgeSet(spineEdgeSet);
                 /* END find skeleton END */
                 
                 mesh.loadEdgeFromPointSet(*mesh.ps);
@@ -1226,12 +1226,13 @@ int main( void )
                 spineEdgeSet = findSkeletonMesh.getSkeletonPointSet(*findSkeletonMesh.ps);
                 // spineEdgeSet = findSkeletonMesh.removeRedundantTerminalEdges(spineEdgeSet);
                 
-                // jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
-                // jointPointEdgeSet = findSkeletonMesh.removeSmallRedundantTerminalEdges(jointPointEdgeSet);
+//                jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(spineEdgeSet);
+//                jointPointEdgeSet = findSkeletonMesh.removeSmallRedundantTerminalEdges(jointPointEdgeSet);
                 
                 
                 jointPointEdgeSet = findSkeletonMesh.getSimplifiedPointEdgeSet(spineEdgeSet);
                 jointPointEdgeSet = findSkeletonMesh.removeSmallRedundantTerminalEdges(jointPointEdgeSet);
+                // jointPointEdgeSet = findSkeletonMesh.getJointPointEdgeSet(jointPointEdgeSet);
                 /* END find skeleton END */
                 
                 mesh.loadEdgeFromPointSet(*mesh.ps);
